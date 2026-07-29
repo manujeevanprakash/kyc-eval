@@ -88,7 +88,6 @@ kyc-eval/
 ## Part of a larger series
 
 This prototype supports the PMExaminer article series on evaluating
-agentic AI in regulated financial services — combining Hamel Husain's
-AI evals framework with OSFI E-23 and KYC compliance workflows.
+agentic AI in regulated financial services.
 
 Read the series: [PMExaminer.com](https://pmexaminer.com)
