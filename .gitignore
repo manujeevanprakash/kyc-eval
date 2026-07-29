@@ -1,0 +1,17 @@
+# API keys — never push these
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# UV
+uv.lock
+
+# Traces — contain client data
+traces/
+
+# VS Code
+.vscode/
