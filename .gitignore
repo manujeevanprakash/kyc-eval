@@ -10,7 +10,7 @@ __pycache__/
 # UV
 uv.lock
 
-# Traces — contain client data
+# Traces — synthetic test cases, regenerated on every run
 traces/
 
 # VS Code

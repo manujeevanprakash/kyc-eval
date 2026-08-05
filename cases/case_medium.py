@@ -6,9 +6,10 @@ case_medium = {
     "case_id": "KYC-002",
     "client": {
         "full_name": "Robert Whitmore",
+        "date_of_birth": "1954-09-08",
         "occupation": "Retired",
         "nationality": "American",
-        "residency": "Canada",
+        "residency": "Vancouver, Canada",
         "net_worth_declared": 8_000_000,
         "pep_declared": False,
         "cross_border_transactions": True,

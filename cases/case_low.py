@@ -6,9 +6,10 @@ case_low = {
     "case_id": "KYC-001",
     "client": {
         "full_name": "Sarah Mitchell",
+        "date_of_birth": "1979-04-22",
         "occupation": "Senior Executive",
         "nationality": "Canadian",
-        "residency": "Canada",
+        "residency": "Toronto, Canada",
         "net_worth_declared": 3_000_000,
         "pep_declared": False,
         "cross_border_transactions": False,

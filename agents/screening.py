@@ -1,16 +1,23 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from config import COMPLIANCE_RULES
+from config import REGULATORY_BASIS
 
 
 def _toronto_now_iso():
     return datetime.now(ZoneInfo("America/Toronto")).isoformat()
 
 
+# Listed persons, consolidated from the UN Act, SEMA and JVCFOA.
+# The client book is North American. The list is not, and that asymmetry
+# is why name screening produces the false positives it does.
+#
+# Each entry carries identifiers. A name match makes someone a candidate.
+# Identifiers are what turn a candidate into a confirmed match.
 SANCTIONS_REGISTRY = [
-    "Viktor Petrov",
-    "Chen Wei",
-    "Ahmed Al-Rashid",
+    {"name": "Viktor Petrov", "date_of_birth": "1968-03-14", "nationality": "Russian"},
+    {"name": "Chen Wei", "date_of_birth": "1975-11-02", "nationality": "Chinese"},
+    {"name": "Ahmed Al-Rashid", "date_of_birth": "1981-06-27", "nationality": "Syrian"},
+    {"name": "Michael Anderson", "date_of_birth": "1959-01-19", "nationality": "British"},
 ]
 
 PEP_REGISTRY = [
@@ -23,32 +30,46 @@ PEP_REGISTRY = [
 def run_screening(case: dict) -> dict:
     """
     Screening Agent — deterministic.
-    Checks client against sanctions and PEP registries.
-    No LLM involved — exact match rules only.
+    Checks the client against sanctions and PEP registries.
+    No LLM involved — matching rules only.
 
-    In production: connects to approved screening vendors
-    such as World-Check, Dow Jones, or ComplyAdvantage.
-    A sanctions match is a hard stop — PCMLTFA s.9.6.
+    In production: connects to approved screening vendors such as
+    World-Check, Dow Jones or ComplyAdvantage.
+
+    A confirmed sanctions match is a hard stop under PCMLTFA s.9.6.
+    A candidate match is not. It is adjudicated on identifiers, and the
+    client is never told about it.
     """
 
     client = case["client"]
     full_name = client.get("full_name", "")
+    date_of_birth = client.get("date_of_birth", "")
     pep_declared = client.get("pep_declared", False)
     cross_border = client.get("cross_border_transactions", False)
 
-    # Rule 1: Sanctions check — hard stop
-    sanctions_match = full_name in SANCTIONS_REGISTRY
+    # Rule 1: Sanctions name screen.
+    # A name hit is a candidate, not a decision. Identifiers decide.
+    name_candidates = [
+        entry for entry in SANCTIONS_REGISTRY
+        if entry["name"].lower() == full_name.lower()
+    ]
+    sanctions_confirmed = any(
+        entry["date_of_birth"] == date_of_birth for entry in name_candidates
+    )
+    sanctions_potential = bool(name_candidates) and not sanctions_confirmed
 
     # Rule 2: PEP registry check
     pep_registry_match = full_name in PEP_REGISTRY
 
-    # Rule 3: Reconcile declared vs detected PEP status
+    # Rule 3: Reconcile declared against detected PEP status
     pep_not_declared_but_detected = pep_registry_match and not pep_declared
     pep_declared_but_not_detected = pep_declared and not pep_registry_match
 
     # Determine finding — order matters, most severe first
-    if sanctions_match:
-        finding = "SANCTIONS_MATCH_DETECTED"
+    if sanctions_confirmed:
+        finding = "SANCTIONS_MATCH_CONFIRMED"
+    elif sanctions_potential:
+        finding = "SANCTIONS_POTENTIAL_MATCH"
     elif pep_not_declared_but_detected:
         finding = "PEP_DETECTED_NOT_DECLARED"
     elif pep_declared_but_not_detected:
@@ -63,24 +84,34 @@ def run_screening(case: dict) -> dict:
     # Build reasoning
     reasons = []
 
-    if sanctions_match:
+    if sanctions_confirmed:
         reasons.append(
-            f"Exact sanctions match found for {full_name}. "
-            f"Hard stop — no discretion permitted under PCMLTFA s.9.6."
+            f"Sanctions match confirmed for {full_name}. "
+            f"Name and date of birth both match a listed person. "
+            f"Hard stop under PCMLTFA s.9.6. No discretion permitted."
+        )
+    if sanctions_potential:
+        listed = name_candidates[0]
+        reasons.append(
+            f"{full_name} matches the name of a listed person, but the "
+            f"date of birth on file ({date_of_birth}) does not match the "
+            f"list entry ({listed['date_of_birth']}, {listed['nationality']}). "
+            f"This is a candidate match requiring adjudication, not a "
+            f"confirmed match. Do not contact the client about this match."
         )
     if pep_registry_match:
-        reasons.append(f"{full_name} appears in PEP registry.")
+        reasons.append(f"{full_name} appears in the PEP registry.")
     if pep_declared:
         reasons.append("Client declared PEP status at onboarding.")
     if pep_not_declared_but_detected:
         reasons.append(
-            "PEP status was not declared but registry match found. "
+            "PEP status was not declared but a registry match was found. "
             "Requires compliance officer review."
         )
     if pep_declared_but_not_detected:
         reasons.append(
-            "Client declared PEP status but no registry match found. "
-            "Compliance officer should verify declaration."
+            "Client declared PEP status but no registry match was found. "
+            "Compliance officer should verify the declaration."
         )
     if cross_border:
         reasons.append(
@@ -97,11 +128,12 @@ def run_screening(case: dict) -> dict:
         "agent": "screening",
         "input": {
             "full_name": full_name,
+            "date_of_birth": date_of_birth,
             "pep_declared": pep_declared,
             "cross_border_transactions": cross_border,
         },
         "finding": finding,
         "reasoning": " ".join(reasons),
         "timestamp": _toronto_now_iso(),
-        "regulatory_basis": COMPLIANCE_RULES["sanctions_screening"],
+        "regulatory_basis": REGULATORY_BASIS[finding],
     }

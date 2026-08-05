@@ -1,6 +1,6 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from config import COMPLIANCE_RULES
+from config import REGULATORY_BASIS
 
 
 def _toronto_now_iso():
@@ -54,7 +54,6 @@ def run_identity(case: dict) -> dict:
 
     finding = "IDENTITY_VERIFIED" if all_passed else "IDENTITY_INCOMPLETE"
 
-    # Build plain-English reasoning — OSFI E-23 requires explainability
     reasons = []
     if not government_id_present:
         reasons.append("Government ID not uploaded.")
@@ -72,7 +71,6 @@ def run_identity(case: dict) -> dict:
             f"Nationality and residency declared."
         )
 
-    # 5-field audit record — mandatory per OSFI E-23
     return {
         "agent": "identity",
         "input": {
@@ -84,5 +82,5 @@ def run_identity(case: dict) -> dict:
         "finding": finding,
         "reasoning": " ".join(reasons),
         "timestamp": _toronto_now_iso(),
-        "regulatory_basis": COMPLIANCE_RULES["ai_explainability"],
+        "regulatory_basis": REGULATORY_BASIS[finding],
     }

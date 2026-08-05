@@ -1,7 +1,6 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from config import COMPLIANCE_RULES
-
+from config import REGULATORY_BASIS
 
 def _toronto_now_iso():
     return datetime.now(ZoneInfo("America/Toronto")).isoformat()
@@ -120,5 +119,5 @@ def run_business(case: dict) -> dict:
         "finding": finding,
         "reasoning": " ".join(reasons),
         "timestamp": _toronto_now_iso(),
-        "regulatory_basis": "PCMLTFA - enhanced due diligence required for complex wealth structures including business sales",
+        "regulatory_basis": REGULATORY_BASIS[finding],
     }

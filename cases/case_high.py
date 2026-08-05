@@ -1,4 +1,4 @@
-# Tuple: Entrepreneur | PEP + crypto + business sale + cross-border | High risk signal
+# Tuple: Entrepreneur | PEP + crypto + business sale + cross-border | High
 
 EXPECTED_RISK_SIGNAL = "HIGH"
 
@@ -6,6 +6,7 @@ case_high = {
     "case_id": "KYC-003",
     "client": {
         "full_name": "James Whitmore",
+        "date_of_birth": "1971-02-11",
         "occupation": "Business Owner",
         "nationality": "Canadian",
         "residency": "Toronto, Canada",

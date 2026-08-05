@@ -1,11 +1,17 @@
-# Tuple: Incomplete Applicant | Missing documents and client fields | Cannot classify
+# Tuple: Employed Professional | Missing documents and client fields | Defer
+#
+# This is the only case that tests whether the system knows what it does
+# not know. The other cases all give the agents enough to reach a
+# conclusion, so they test whether the conclusion is right. This one
+# tests whether the system declines to reach one at all.
 
 EXPECTED_RISK_SIGNAL = "CANNOT_CLASSIFY"
 
 case_incomplete = {
     "case_id": "KYC-004",
     "client": {
-        "full_name": "Daniel Osei",
+        "full_name": "Daniel Hayes",
+        "date_of_birth": "1983-07-05",
         "occupation": "Consultant",
         "nationality": "Canadian",
         "residency": "",

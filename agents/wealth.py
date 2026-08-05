@@ -1,7 +1,6 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from config import COMPLIANCE_RULES
-
+from config import REGULATORY_BASIS
 
 def _toronto_now_iso():
     return datetime.now(ZoneInfo("America/Toronto")).isoformat()
@@ -98,5 +97,5 @@ def run_wealth(case: dict) -> dict:
         "finding": finding,
         "reasoning": " ".join(reasons),
         "timestamp": _toronto_now_iso(),
-        "regulatory_basis": COMPLIANCE_RULES["source_of_funds"],
+        "regulatory_basis": REGULATORY_BASIS[finding],
     }

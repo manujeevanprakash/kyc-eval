@@ -1,16 +1,23 @@
-import json
-from datetime import datetime
-from zoneinfo import ZoneInfo
-from litellm import completion
-from config import GROQ_API_KEY, MODEL, E23_EXPLAINABILITY 
+# Standalone demo for:
+# https://pmexaminer.com/why-evaluating-ai-agents-is-so-hard-in-banking/
+# Pinned to llama-3.1-8b-instant to reproduce the article output.
+# The prompt here is a snapshot and may diverge from case_summary_llm.py.
 
 import os
-os.environ["GROQ_API_KEY"] = GROQ_API_KEY
+import warnings
+warnings.filterwarnings("ignore")
+from dotenv import load_dotenv
+from litellm import completion
 
+load_dotenv()
+os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
 
-def _toronto_now_iso():
-    return datetime.now(ZoneInfo("America/Toronto")).isoformat()
-
+from cases.case_high import case_high
+from agents.identity import run_identity
+from agents.screening import run_screening
+from agents.wealth import run_wealth
+from agents.business import run_business
+from engine.risk_engine import run_risk_engine
 
 SYSTEM_PROMPT = """You are a compliance review assistant at a Canadian bank.
 
@@ -29,12 +36,7 @@ Your summary must follow this exact structure:
 One sentence stating the client name and risk signal.
 
 2. WHAT HAS BEEN VERIFIED
-List every verified item clearly. For example:
-- Identity verification is complete
-- No sanctions match was found
-- No adverse media or watchlist concerns
-- Wealth documents and bank statements are present
-- Business sale context is supported
+List every verified item clearly.
 
 3. WHAT NEEDS REVIEW
 List every item that needs attention. Explain why each one matters 
@@ -52,25 +54,14 @@ Rules:
 - Keep the summary under 250 words
 - Write in plain English that a compliance officer can act on immediately"""
 
-def run_case_summary_llm(
-    case: dict,
-    risk_engine_output: dict,
-) -> dict:
-    """
-    Case Summary LLM Agent — the one LLM in this workflow.
-    Takes the Risk Engine structured output and writes
-    plain English for the compliance officer.
 
-    This is where the model grader applies in your eval framework.
-    """
-
-    client_name = case["client"]["full_name"]
+def call_summary_llm(risk_engine_output: dict, temperature: float = 0.1) -> str:
+    client_name = case_high["client"]["full_name"]
     risk_signal = risk_engine_output["finding"]
     verified = risk_engine_output.get("verified", [])
     needs_review = risk_engine_output.get("needs_review", [])
     reasoning = risk_engine_output["reasoning"]
 
-    # Build the user message — structured input to the LLM
     user_message = f"""Client name: {client_name}
 Risk signal: {risk_signal}
 
@@ -84,33 +75,35 @@ Risk Engine reasoning: {reasoning}
 
 Write the compliance officer summary now."""
 
-    # Call the LLM
     response = completion(
-        model=MODEL,
+        model="groq/llama-3.1-8b-instant",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
         ],
         max_tokens=400,
-        temperature=0.1,  # Low temperature for consistency
+        temperature=temperature,
     )
+    return response.choices[0].message.content.strip()
 
-    summary_text = response.choices[0].message.content.strip()
 
-    # 5-field audit record
-    return {
-        "agent": "case_summary_llm",
-        "model": MODEL,
-        "input": {
-            "client_name": client_name,
-            # The signal was received, not decided. Recorded as input.
-            "risk_signal_received": risk_signal,
-            "verified": verified,
-            "needs_review": needs_review,
-        },
-        # This agent writes prose. It does not classify.
-        "finding": "SUMMARY_GENERATED",
-        "reasoning": summary_text,
-        "timestamp": _toronto_now_iso(),
-        "regulatory_basis": E23_EXPLAINABILITY,
-    }
+# Run deterministic pipeline silently
+identity_result  = run_identity(case_high)
+screening_result = run_screening(case_high)
+wealth_result    = run_wealth(case_high)
+business_result  = run_business(case_high)
+
+risk_result = run_risk_engine(
+    case_high,
+    identity_result,
+    screening_result,
+    wealth_result,
+    business_result,
+)
+
+# Print only the two LLM outputs
+print("--- Run 1 ---\n")
+print(call_summary_llm(risk_result, temperature=0.1))
+
+print("\n--- Run 2 ---\n")
+print(call_summary_llm(risk_result, temperature=0.1))
