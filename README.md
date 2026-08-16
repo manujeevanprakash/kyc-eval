@@ -14,7 +14,7 @@ outputs can be proved to a compliance team and a regulator.
 - A rules-based Risk Engine producing a risk signal with no scoring model
 - A sanctions candidate match handled differently from a confirmed match
 - Formal deferral (CANNOT_CLASSIFY) when evidence is insufficient, naming the missing documents
-- A 5-field audit record per agent, citing the regulation the decision was made under
+- A six-field audit record per agent, citing the regulation the decision was made under
 - LangSmith tracing for every run
 - Six golden test cases with expected outcomes
 
@@ -59,8 +59,8 @@ uv run python run.py
 | KYC-002 | Robert Whitmore | Inherited wealth, cross-border | MEDIUM |
 | KYC-003 | James Whitmore | PEP, crypto, business sale | HIGH |
 | KYC-004 | Daniel Hayes | Missing documents | CANNOT_CLASSIFY |
-| KYC-005 | Michael Anderson | Sanctions name match, identifiers differ | HIGH |
-| KYC-006 | Michael Anderson | Sanctions match confirmed | HIGH |
+| KYC-005 | Michael Anderson (b. 1972) | Sanctions name match, identifiers differ | HIGH |
+| KYC-006 | Michael Anderson (b. 1959) | Sanctions match confirmed | HIGH |
 
 KYC-005 and KYC-006 differ by one field, the date of birth, and produce
 opposite operational outcomes. One is adjudicated. The other is a hard stop.
@@ -79,7 +79,7 @@ kyc-eval/
 │   ├── risk_engine.py               # Rules-based risk classification
 │   └── case_summary_llm.py          # The only LLM in the workflow
 ├── audit/
-│   └── store.py                     # 5-field audit record per agent run
+│   └── store.py                     # Writes the full trace once per run
 ├── cases/
 │   ├── case_low.py
 │   ├── case_medium.py
@@ -89,13 +89,23 @@ kyc-eval/
 │   └── case_sanctions_confirmed.py
 ├── eval/                            # Code grader and model grader (coming soon)
 ├── traces/                          # Audit records as JSON, regenerated each run
-├── eval-runs/                       # Frozen trace snapshots for published articles
 ├── workflow.py                      # LangGraph graph
 ├── run.py                           # Entry point
 ├── demo_nondeterminism.py           # Standalone demo for a published article
 ├── config.py                        # API keys, model, regulatory basis
 └── CHANGELOG.md
 ```
+
+## A note on how the trace is written
+
+The trace is written once, at the end of each run, rather than by each agent
+as it finishes. The four specialist agents run in parallel, and a
+read-modify-write from inside each node loses records when two of them reach
+the file at the same time.
+
+Each record carries six fields: agent, input, finding, reasoning, timestamp
+and regulatory basis. The Case Summary agent adds a seventh, naming the model
+it ran on.
 
 ## A note on regulatory citations
 
@@ -106,16 +116,6 @@ The four deterministic agents apply rules rather than statistical methods,
 so they cite the PCMLTFA or FINTRAC requirement they are executing. OSFI
 E-23 governs models, and the Case Summary agent is the only component here
 that uses one, so it is the only component that cites E-23.
-
-## Tags
-
-`baseline-error-analysis` marks the state of the code used for the error
-analysis article. The summaries produced at that tag contain known failures
-which are documented in `CHANGELOG.md` and fixed in later commits.
-
-```
-git checkout baseline-error-analysis
-```
 
 ## Part of a larger series
 
