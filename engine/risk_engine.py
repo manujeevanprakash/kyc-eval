@@ -121,9 +121,15 @@ def run_risk_engine(
     # Order carries legal weight. A confirmed sanctions match stops the case
     # regardless of how complete the package is, so it is evaluated first.
     # Missing documents never delay a hard stop.
+    #
+    # Each branch sets basis_key alongside the signal. The regulation has to
+    # come from the reason the decision was made, not from the tier it landed
+    # in. A PEP case and a sanctions hard stop both return HIGH and they are
+    # governed by different rules.
 
     if any(code == "HARD_STOP" for _, code in issues):
         risk_signal = "HIGH"
+        basis_key = "SANCTIONS_MATCH_CONFIRMED"
         risk_reason = (
             "Sanctions match confirmed. "
             "Hard stop under PCMLTFA s.9.6. "
@@ -134,6 +140,7 @@ def run_risk_engine(
     # wait on wealth documents, so it resolves before the deferral check.
     elif any(code == "SANCTIONS_POTENTIAL_MATCH" for _, code in issues):
         risk_signal = "HIGH"
+        basis_key = "SANCTIONS_POTENTIAL_MATCH"
         risk_reason = (
             "Client name matches a listed person but the identifying "
             "details differ. Adjudication required before onboarding "
@@ -148,6 +155,7 @@ def run_risk_engine(
             if code in INCOMPLETE_FINDINGS
         ]
         risk_signal = "CANNOT_CLASSIFY"
+        basis_key = "CANNOT_CLASSIFY"
         risk_reason = (
             "This case cannot be classified until the following are "
             "provided: " + "; ".join(gaps) + "."
@@ -158,6 +166,7 @@ def run_risk_engine(
         and any(code == "CRYPTO_ORIGIN_NOT_ESTABLISHED" for _, code in issues)
     ):
         risk_signal = "HIGH"
+        basis_key = "PEP_CONFIRMED"
         risk_reason = (
             "PEP status confirmed and crypto origin not established. "
             "Enhanced due diligence required under FINTRAC guidelines."
@@ -165,18 +174,22 @@ def run_risk_engine(
 
     elif any(agent == "screening" and "PEP" in code for agent, code in issues):
         risk_signal = "HIGH"
+        basis_key = "PEP_CONFIRMED"
         risk_reason = "PEP status identified. Enhanced due diligence required."
 
     elif len(issues) >= 2:
         risk_signal = "MEDIUM"
+        basis_key = "MEDIUM"
         risk_reason = f"{len(issues)} risk issues identified. Requires review."
 
     elif len(issues) == 1:
         risk_signal = "MEDIUM"
+        basis_key = "MEDIUM"
         risk_reason = f"One risk issue identified: {issues[0][1]}."
 
     else:
         risk_signal = "LOW"
+        basis_key = "LOW"
         risk_reason = "All checks passed. No issues identified."
 
     # Findings summary passed to the Case Summary agent
@@ -194,7 +207,7 @@ def run_risk_engine(
         "finding": risk_signal,
         "reasoning": risk_reason,
         "timestamp": _toronto_now_iso(),
-        "regulatory_basis": REGULATORY_BASIS[risk_signal],
+        "regulatory_basis": REGULATORY_BASIS[basis_key],
         "verified": verified,
         "needs_review": needs_review,
     }

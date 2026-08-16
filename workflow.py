@@ -2,7 +2,7 @@
 KYC Agentic Workflow — LangGraph implementation.
 
 This module wires all agents into a LangGraph graph.
-LangGraph replaces the Workflow Controller from the 
+LangGraph replaces the Workflow Controller from the
 original prototype.
 
 Flow:
@@ -14,12 +14,15 @@ Flow:
         → business (only if business sale present)
         → risk engine (aggregates all findings)
         → case summary LLM (plain English for compliance officer)
-        → audit store (5 fields per agent, stored as JSON)
+        → audit store (one trace file per case)
+
+The trace is written once, at the end of the run. The four specialist
+agents run in parallel, so writing from inside each node loses records
+when two of them reach the file at the same time.
 """
 
 from typing import TypedDict, Any
 from langgraph.graph import StateGraph, START, END
-
 from agents.orchestrator import run_orchestrator
 from agents.identity import run_identity
 from agents.screening import run_screening
@@ -27,7 +30,7 @@ from agents.wealth import run_wealth
 from agents.business import run_business
 from engine.risk_engine import run_risk_engine
 from engine.case_summary_llm import run_case_summary_llm
-from audit.store import save_audit_record
+from audit.store import save_trace
 
 
 # LangGraph state — this flows between every node
@@ -57,25 +60,21 @@ def orchestrator_node(state: KYCState) -> dict:
 
 def identity_node(state: KYCState) -> dict:
     result = run_identity(state["case"])
-    save_audit_record(state["case"]["case_id"], result)
     return {"identity_result": result}
 
 
 def screening_node(state: KYCState) -> dict:
     result = run_screening(state["case"])
-    save_audit_record(state["case"]["case_id"], result)
     return {"screening_result": result}
 
 
 def wealth_node(state: KYCState) -> dict:
     result = run_wealth(state["case"])
-    save_audit_record(state["case"]["case_id"], result)
     return {"wealth_result": result}
 
 
 def business_node(state: KYCState) -> dict:
     result = run_business(state["case"])
-    save_audit_record(state["case"]["case_id"], result)
     return {"business_result": result}
 
 
@@ -87,7 +86,6 @@ def risk_engine_node(state: KYCState) -> dict:
         state["wealth_result"],
         state.get("business_result"),
     )
-    save_audit_record(state["case"]["case_id"], result)
     return {"risk_result": result}
 
 
@@ -96,7 +94,20 @@ def case_summary_node(state: KYCState) -> dict:
         state["case"],
         state["risk_result"],
     )
-    save_audit_record(state["case"]["case_id"], result)
+
+    # The whole trace is written here, once, in execution order.
+    # Nothing else touches the file.
+    records = [
+        state.get("orchestrator_output"),
+        state.get("identity_result"),
+        state.get("screening_result"),
+        state.get("wealth_result"),
+        state.get("business_result"),
+        state.get("risk_result"),
+        result,
+    ]
+    save_trace(state["case"]["case_id"], [r for r in records if r])
+
     return {"summary_result": result}
 
 

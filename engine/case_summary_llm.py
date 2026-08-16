@@ -91,7 +91,7 @@ Write the compliance officer summary now."""
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
         ],
-        max_tokens=400,
+        max_tokens=600,
         temperature=0.1,  # Low temperature for consistency
     )
 
