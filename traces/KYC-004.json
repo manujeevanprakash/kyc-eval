@@ -1,0 +1,129 @@
+[
+  {
+    "agent": "orchestrator",
+    "input": {
+      "case_id": "KYC-004",
+      "source_of_wealth_description": "Consulting income accumulated over 10 years"
+    },
+    "finding": "PLAN_CREATED",
+    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on the declared source of wealth.",
+    "timestamp": "2026-08-15T23:09:44.640170-04:00",
+    "regulatory_basis": "OSFI E-23 - agent selection and input scope must be documented and independently reviewable",
+    "case_id": "KYC-004",
+    "orchestrator_name": "kyc_orchestrator",
+    "execution_status": "COMPLETED",
+    "created_at": "2026-08-15T23:09:44.640189-04:00",
+    "required_checks": [
+      "identity",
+      "screening",
+      "wealth"
+    ],
+    "dispatch_instructions": {
+      "identity": {
+        "use": [
+          "client.full_name",
+          "client.nationality",
+          "client.residency",
+          "documents.government_id"
+        ]
+      },
+      "screening": {
+        "use": [
+          "client.full_name",
+          "client.nationality",
+          "client.pep_declared",
+          "client.cross_border_transactions"
+        ]
+      },
+      "wealth": {
+        "use": [
+          "source_of_wealth",
+          "source_of_funds",
+          "documents.wealth_document",
+          "documents.bank_statements",
+          "documents.crypto_records"
+        ]
+      }
+    }
+  },
+  {
+    "agent": "identity",
+    "input": {
+      "full_name": "Daniel Hayes",
+      "nationality": "Canadian",
+      "residency": "",
+      "government_id_uploaded": true
+    },
+    "finding": "IDENTITY_INCOMPLETE",
+    "reasoning": "Residency not declared.",
+    "timestamp": "2026-08-15T23:09:44.642380-04:00",
+    "regulatory_basis": "PCMLTFA - identity verification required before account opening"
+  },
+  {
+    "agent": "screening",
+    "input": {
+      "full_name": "Daniel Hayes",
+      "date_of_birth": "1983-07-05",
+      "pep_declared": false,
+      "cross_border_transactions": false
+    },
+    "finding": "NO_SCREENING_INDICATORS",
+    "reasoning": "No sanctions match found for Daniel Hayes. No PEP indicators. No cross-border activity declared.",
+    "timestamp": "2026-08-15T23:09:44.644729-04:00",
+    "regulatory_basis": "PCMLTFA s.9.6 - sanctions screening performed, no match returned"
+  },
+  {
+    "agent": "wealth",
+    "input": {
+      "source_of_wealth": "Consulting income accumulated over 10 years",
+      "source_of_funds": "Business account transfer",
+      "declared_amount": 200000,
+      "crypto_involved": false,
+      "wealth_document_present": false,
+      "bank_statements_present": false,
+      "crypto_records_present": false
+    },
+    "finding": "WEALTH_EVIDENCE_INCOMPLETE",
+    "reasoning": "Wealth document not uploaded. Bank statements not uploaded.",
+    "timestamp": "2026-08-15T23:09:44.645857-04:00",
+    "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
+  },
+  {
+    "agent": "risk_engine",
+    "input": {
+      "identity": "IDENTITY_INCOMPLETE",
+      "screening": "NO_SCREENING_INDICATORS",
+      "wealth": "WEALTH_EVIDENCE_INCOMPLETE"
+    },
+    "finding": "CANNOT_CLASSIFY",
+    "reasoning": "This case cannot be classified until the following are provided: Identity information is incomplete; Required wealth documents are missing.",
+    "timestamp": "2026-08-15T23:09:44.647152-04:00",
+    "regulatory_basis": "FINTRAC - a client risk rating cannot be assigned until the required information is obtained",
+    "verified": [
+      "No sanctions or PEP indicators found"
+    ],
+    "needs_review": [
+      "Identity verification incomplete",
+      "Required wealth documents are missing"
+    ]
+  },
+  {
+    "agent": "case_summary_llm",
+    "model": "groq/openai/gpt-oss-120b",
+    "input": {
+      "client_name": "Daniel Hayes",
+      "risk_signal_received": "CANNOT_CLASSIFY",
+      "verified": [
+        "No sanctions or PEP indicators found"
+      ],
+      "needs_review": [
+        "Identity verification incomplete",
+        "Required wealth documents are missing"
+      ]
+    },
+    "finding": "SUMMARY_GENERATED",
+    "reasoning": "**OPENING LINE**  \nClient\u202fDaniel\u202fHayes \u2013 risk signal: CANNOT_CLASSIFY.  \n\n**WHAT HAS BEEN VERIFIED**  \n- No sanctions or politically exposed person matches were found.  \n\n**WHAT NEEDS REVIEW**  \n- Identity verification is incomplete \u2013 we still need a government\u2011issued photo ID and proof of address to confirm who the client really is.  \n- Required wealth documents are missing \u2013 without recent bank statements, investment summaries, or other proof of assets we cannot assess the source and legitimacy of the client\u2019s wealth.  \n\n**WHERE TO FOCUS**  \n- Request Daniel to provide a clear, unexpired passport or driver\u2019s licence and a recent utility bill or bank statement showing his residential address. Verify that the documents are authentic and match the information already on file.  \n- Ask for up\u2011to\u2011date wealth documentation, such as the latest three months of bank statements, brokerage statements, or audited financial statements that demonstrate the origin and amount of his assets. Ensure the documents are original or certified copies and that they cover the full scope of his reported wealth.  \n\nThese actions will allow the case to be re\u2011evaluated and properly classified.",
+    "timestamp": "2026-08-15T23:09:45.733068-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+  }
+]

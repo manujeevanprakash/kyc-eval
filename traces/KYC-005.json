@@ -1,0 +1,129 @@
+[
+  {
+    "agent": "orchestrator",
+    "input": {
+      "case_id": "KYC-005",
+      "source_of_wealth_description": "Partnership income from an architecture practice"
+    },
+    "finding": "PLAN_CREATED",
+    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on the declared source of wealth.",
+    "timestamp": "2026-08-15T23:09:45.745860-04:00",
+    "regulatory_basis": "OSFI E-23 - agent selection and input scope must be documented and independently reviewable",
+    "case_id": "KYC-005",
+    "orchestrator_name": "kyc_orchestrator",
+    "execution_status": "COMPLETED",
+    "created_at": "2026-08-15T23:09:45.745878-04:00",
+    "required_checks": [
+      "identity",
+      "screening",
+      "wealth"
+    ],
+    "dispatch_instructions": {
+      "identity": {
+        "use": [
+          "client.full_name",
+          "client.nationality",
+          "client.residency",
+          "documents.government_id"
+        ]
+      },
+      "screening": {
+        "use": [
+          "client.full_name",
+          "client.nationality",
+          "client.pep_declared",
+          "client.cross_border_transactions"
+        ]
+      },
+      "wealth": {
+        "use": [
+          "source_of_wealth",
+          "source_of_funds",
+          "documents.wealth_document",
+          "documents.bank_statements",
+          "documents.crypto_records"
+        ]
+      }
+    }
+  },
+  {
+    "agent": "identity",
+    "input": {
+      "full_name": "Michael Anderson",
+      "nationality": "Canadian",
+      "residency": "Vancouver, Canada",
+      "government_id_uploaded": true
+    },
+    "finding": "IDENTITY_VERIFIED",
+    "reasoning": "Identity evidence is present for Michael Anderson. Government ID uploaded. Nationality and residency declared.",
+    "timestamp": "2026-08-15T23:09:45.747975-04:00",
+    "regulatory_basis": "PCMLTFA - identity verification required before account opening"
+  },
+  {
+    "agent": "screening",
+    "input": {
+      "full_name": "Michael Anderson",
+      "date_of_birth": "1972-08-30",
+      "pep_declared": false,
+      "cross_border_transactions": false
+    },
+    "finding": "SANCTIONS_POTENTIAL_MATCH",
+    "reasoning": "Michael Anderson matches the name of a listed person, but the date of birth on file (1972-08-30) does not match the list entry (1959-01-19, British). This is a candidate match requiring adjudication, not a confirmed match. Do not contact the client about this match.",
+    "timestamp": "2026-08-15T23:09:45.749618-04:00",
+    "regulatory_basis": "PCMLTFA s.9.6 - candidate match requires adjudication before onboarding; disclosure to the client is prohibited"
+  },
+  {
+    "agent": "wealth",
+    "input": {
+      "source_of_wealth": "Partnership income from an architecture practice",
+      "source_of_funds": "Transfer from personal savings account",
+      "declared_amount": 600000,
+      "crypto_involved": false,
+      "wealth_document_present": true,
+      "bank_statements_present": true,
+      "crypto_records_present": false
+    },
+    "finding": "WEALTH_SUPPORTED",
+    "reasoning": "Wealth document present. Declared source of funds: Transfer from personal savings account. Bank statements present. All required wealth and funds documents are present. No crypto exposure.",
+    "timestamp": "2026-08-15T23:09:45.750705-04:00",
+    "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
+  },
+  {
+    "agent": "risk_engine",
+    "input": {
+      "identity": "IDENTITY_VERIFIED",
+      "screening": "SANCTIONS_POTENTIAL_MATCH",
+      "wealth": "WEALTH_SUPPORTED"
+    },
+    "finding": "HIGH",
+    "reasoning": "Client name matches a listed person but the identifying details differ. Adjudication required before onboarding continues. Do not contact the client about the match.",
+    "timestamp": "2026-08-15T23:09:45.761510-04:00",
+    "regulatory_basis": "PCMLTFA s.9.6 - candidate match requires adjudication before onboarding; disclosure to the client is prohibited",
+    "verified": [
+      "Identity verification complete",
+      "Source of wealth and funds supported by documents"
+    ],
+    "needs_review": [
+      "Potential sanctions match. Name matched a listed person but identifiers differ. Adjudication required before onboarding."
+    ]
+  },
+  {
+    "agent": "case_summary_llm",
+    "model": "groq/openai/gpt-oss-120b",
+    "input": {
+      "client_name": "Michael Anderson",
+      "risk_signal_received": "HIGH",
+      "verified": [
+        "Identity verification complete",
+        "Source of wealth and funds supported by documents"
+      ],
+      "needs_review": [
+        "Potential sanctions match. Name matched a listed person but identifiers differ. Adjudication required before onboarding."
+      ]
+    },
+    "finding": "SUMMARY_GENERATED",
+    "reasoning": "**OPENING LINE**  \nMichael Anderson is flagged with a HIGH risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- Source of wealth and source of funds have been supported by the client\u2019s documentation.\n\n**WHAT NEEDS REVIEW**  \n- A potential sanctions match was identified because the client\u2019s name appears on a sanctions list, although the accompanying identifiers (date of birth, address, etc.) do not line up. This matters because any false\u2011positive or true match could expose the bank to regulatory penalties and reputational risk, so the match must be cleared before the client can be onboarded.\n\n**WHERE TO FOCUS**  \n- Initiate an internal sanctions adjudication: forward the match details to the sanctions compliance team for a thorough review of the name, identifiers, and supporting documents.  \n- Verify the differing identifiers against the sanctions list entry to determine whether this is a false positive or a genuine concern.  \n- Document the adjudication outcome in the client file.  \n- Do **not** contact the client about the sanctions match until the internal review is completed.  \n\nProceed with the adjudication steps before any further onboarding actions are taken.",
+    "timestamp": "2026-08-15T23:09:47.250831-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+  }
+]

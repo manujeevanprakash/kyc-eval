@@ -1,0 +1,131 @@
+[
+  {
+    "agent": "orchestrator",
+    "input": {
+      "case_id": "KYC-002",
+      "source_of_wealth_description": "Inheritance from deceased parent estate"
+    },
+    "finding": "PLAN_CREATED",
+    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on the declared source of wealth.",
+    "timestamp": "2026-08-15T23:09:42.166754-04:00",
+    "regulatory_basis": "OSFI E-23 - agent selection and input scope must be documented and independently reviewable",
+    "case_id": "KYC-002",
+    "orchestrator_name": "kyc_orchestrator",
+    "execution_status": "COMPLETED",
+    "created_at": "2026-08-15T23:09:42.166766-04:00",
+    "required_checks": [
+      "identity",
+      "screening",
+      "wealth"
+    ],
+    "dispatch_instructions": {
+      "identity": {
+        "use": [
+          "client.full_name",
+          "client.nationality",
+          "client.residency",
+          "documents.government_id"
+        ]
+      },
+      "screening": {
+        "use": [
+          "client.full_name",
+          "client.nationality",
+          "client.pep_declared",
+          "client.cross_border_transactions"
+        ]
+      },
+      "wealth": {
+        "use": [
+          "source_of_wealth",
+          "source_of_funds",
+          "documents.wealth_document",
+          "documents.bank_statements",
+          "documents.crypto_records"
+        ]
+      }
+    }
+  },
+  {
+    "agent": "identity",
+    "input": {
+      "full_name": "Robert Whitmore",
+      "nationality": "American",
+      "residency": "Vancouver, Canada",
+      "government_id_uploaded": true
+    },
+    "finding": "IDENTITY_VERIFIED",
+    "reasoning": "Identity evidence is present for Robert Whitmore. Government ID uploaded. Nationality and residency declared.",
+    "timestamp": "2026-08-15T23:09:42.167902-04:00",
+    "regulatory_basis": "PCMLTFA - identity verification required before account opening"
+  },
+  {
+    "agent": "screening",
+    "input": {
+      "full_name": "Robert Whitmore",
+      "date_of_birth": "1954-09-08",
+      "pep_declared": false,
+      "cross_border_transactions": true
+    },
+    "finding": "CROSS_BORDER_FLAGGED",
+    "reasoning": "Cross-border transactions expected. Adds complexity to the compliance review.",
+    "timestamp": "2026-08-15T23:09:42.169019-04:00",
+    "regulatory_basis": "PCMLTFA - electronic funds transfer reporting required for cross-border transfers of CAD 10,000 or more"
+  },
+  {
+    "agent": "wealth",
+    "input": {
+      "source_of_wealth": "Inheritance from deceased parent estate",
+      "source_of_funds": "International estate transfer from US estate account",
+      "declared_amount": 8000000,
+      "crypto_involved": false,
+      "wealth_document_present": true,
+      "bank_statements_present": true,
+      "crypto_records_present": false
+    },
+    "finding": "WEALTH_SUPPORTED",
+    "reasoning": "Wealth document present. Declared source of funds: International estate transfer from US estate account. Bank statements present. All required wealth and funds documents are present. No crypto exposure.",
+    "timestamp": "2026-08-15T23:09:42.169842-04:00",
+    "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
+  },
+  {
+    "agent": "risk_engine",
+    "input": {
+      "identity": "IDENTITY_VERIFIED",
+      "screening": "CROSS_BORDER_FLAGGED",
+      "wealth": "WEALTH_SUPPORTED"
+    },
+    "finding": "MEDIUM",
+    "reasoning": "One risk issue identified: CROSS_BORDER_FLAGGED.",
+    "timestamp": "2026-08-15T23:09:42.171415-04:00",
+    "regulatory_basis": "FINTRAC - risk-based approach; a client risk rating is required for every business relationship",
+    "verified": [
+      "Identity verification complete",
+      "No sanctions or PEP indicators found",
+      "Source of wealth and funds supported by documents"
+    ],
+    "needs_review": [
+      "Cross-border transactions expected. Requires review."
+    ]
+  },
+  {
+    "agent": "case_summary_llm",
+    "model": "groq/openai/gpt-oss-120b",
+    "input": {
+      "client_name": "Robert Whitmore",
+      "risk_signal_received": "MEDIUM",
+      "verified": [
+        "Identity verification complete",
+        "No sanctions or PEP indicators found",
+        "Source of wealth and funds supported by documents"
+      ],
+      "needs_review": [
+        "Cross-border transactions expected. Requires review."
+      ]
+    },
+    "finding": "SUMMARY_GENERATED",
+    "reasoning": "**OPENING LINE**  \nRobert Whitmore is being onboarded with a MEDIUM risk signal.  \n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions or politically exposed person (PEP) matches were found.  \n- The source of wealth and source of funds have been documented and are satisfactory.  \n\n**WHAT NEEDS REVIEW**  \n- Cross\u2011border transactions are expected. This matters because moving money across jurisdictions can increase exposure to money\u2011laundering, terrorist financing, and regulatory compliance risks, especially if the destinations are high\u2011risk or subject to sanctions.  \n\n**WHERE TO FOCUS**  \n- Obtain a detailed description of the anticipated cross\u2011border transactions: expected frequency, typical amounts, currencies, and the business or personal purpose of each.  \n- Identify the counterparties and the jurisdictions involved; check those jurisdictions against the bank\u2019s high\u2011risk country list and run sanctions screening on the counterparties.  \n- Request any supporting documentation (e.g., contracts, invoices, trade agreements) that explains the economic rationale for the transfers.  \n- Perform an enhanced due\u2011diligence review based on the information gathered, documenting the risk assessment and any additional monitoring requirements.",
+    "timestamp": "2026-08-15T23:09:43.456099-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+  }
+]

@@ -1,0 +1,181 @@
+[
+  {
+    "agent": "identity",
+    "input": {
+      "full_name": "Robert Whitmore",
+      "nationality": "American",
+      "residency": "Vancouver, Canada",
+      "government_id_uploaded": true
+    },
+    "finding": "IDENTITY_VERIFIED",
+    "reasoning": "Identity evidence is present for Robert Whitmore. Government ID uploaded. Nationality and residency declared.",
+    "timestamp": "2026-08-05T01:38:22.337674-04:00",
+    "regulatory_basis": "PCMLTFA - identity verification required before account opening"
+  },
+  {
+    "agent": "wealth",
+    "input": {
+      "source_of_wealth": "Inheritance from deceased parent estate",
+      "source_of_funds": "International estate transfer from US estate account",
+      "declared_amount": 8000000,
+      "crypto_involved": false,
+      "wealth_document_present": true,
+      "bank_statements_present": true,
+      "crypto_records_present": false
+    },
+    "finding": "WEALTH_SUPPORTED",
+    "reasoning": "Wealth document present. Declared source of funds: International estate transfer from US estate account. Bank statements present. All required wealth and funds documents are present. No crypto exposure.",
+    "timestamp": "2026-08-05T01:38:22.340843-04:00",
+    "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
+  },
+  {
+    "agent": "risk_engine",
+    "input": {
+      "identity": "IDENTITY_VERIFIED",
+      "screening": "CROSS_BORDER_FLAGGED",
+      "wealth": "WEALTH_SUPPORTED"
+    },
+    "finding": "MEDIUM",
+    "reasoning": "One risk issue identified: CROSS_BORDER_FLAGGED.",
+    "timestamp": "2026-08-05T01:38:22.379393-04:00",
+    "regulatory_basis": "FINTRAC - risk-based approach; a client risk rating is required for every business relationship",
+    "verified": [
+      "Identity verification complete",
+      "No sanctions or PEP indicators found",
+      "Source of wealth and funds supported by documents"
+    ],
+    "needs_review": [
+      "Cross-border transactions expected. Requires review."
+    ]
+  },
+  {
+    "agent": "case_summary_llm",
+    "input": {
+      "client_name": "Robert Whitmore",
+      "risk_signal_received": "MEDIUM",
+      "verified": [
+        "Identity verification complete",
+        "No sanctions or PEP indicators found",
+        "Source of wealth and funds supported by documents"
+      ],
+      "needs_review": [
+        "Cross-border transactions expected. Requires review."
+      ]
+    },
+    "finding": "SUMMARY_GENERATED",
+    "reasoning": "Robert Whitmore, a MEDIUM-risk client, is being onboarded.\n\nWHAT HAS BEEN VERIFIED:\n- Identity verification is complete, confirming Robert Whitmore's identity.\n- No sanctions or PEP indicators were found, indicating he is not on any watchlists.\n- Documents supporting the source of his wealth and funds have been provided.\n\nWHAT NEEDS REVIEW:\n- Cross-border transactions are expected, which raises concerns about potential money laundering or terrorist financing risks.\n- This requires a thorough review to ensure we understand the purpose and legitimacy of these transactions.\n\nWHERE TO FOCUS:\n- Review the client's business and financial activities to understand the need for cross-border transactions.\n- Verify the client's documentation and information to ensure compliance with anti-money laundering regulations.\n- Consider requesting additional information or documentation from the client to support the legitimacy of these transactions.",
+    "timestamp": "2026-08-05T01:38:22.982809-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+  },
+  {
+    "agent": "wealth",
+    "input": {
+      "source_of_wealth": "Inheritance from deceased parent estate",
+      "source_of_funds": "International estate transfer from US estate account",
+      "declared_amount": 8000000,
+      "crypto_involved": false,
+      "wealth_document_present": true,
+      "bank_statements_present": true,
+      "crypto_records_present": false
+    },
+    "finding": "WEALTH_SUPPORTED",
+    "reasoning": "Wealth document present. Declared source of funds: International estate transfer from US estate account. Bank statements present. All required wealth and funds documents are present. No crypto exposure.",
+    "timestamp": "2026-08-05T02:00:50.779766-04:00",
+    "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
+  },
+  {
+    "agent": "risk_engine",
+    "input": {
+      "identity": "IDENTITY_VERIFIED",
+      "screening": "CROSS_BORDER_FLAGGED",
+      "wealth": "WEALTH_SUPPORTED"
+    },
+    "finding": "MEDIUM",
+    "reasoning": "One risk issue identified: CROSS_BORDER_FLAGGED.",
+    "timestamp": "2026-08-05T02:00:50.799800-04:00",
+    "regulatory_basis": "FINTRAC - risk-based approach; a client risk rating is required for every business relationship",
+    "verified": [
+      "Identity verification complete",
+      "No sanctions or PEP indicators found",
+      "Source of wealth and funds supported by documents"
+    ],
+    "needs_review": [
+      "Cross-border transactions expected. Requires review."
+    ]
+  },
+  {
+    "agent": "case_summary_llm",
+    "input": {
+      "client_name": "Robert Whitmore",
+      "risk_signal_received": "MEDIUM",
+      "verified": [
+        "Identity verification complete",
+        "No sanctions or PEP indicators found",
+        "Source of wealth and funds supported by documents"
+      ],
+      "needs_review": [
+        "Cross-border transactions expected. Requires review."
+      ]
+    },
+    "finding": "SUMMARY_GENERATED",
+    "reasoning": "**OPENING LINE**  \nRobert Whitmore is a medium\u2011risk client.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions or politically exposed person matches were found.  \n- Documentation supporting the source of his wealth and the source of funds has been received and accepted.\n\n**WHAT NEEDS REVIEW**  \n- Expected cross\u2011border transactions require further review because moving money across jurisdictions can introduce additional regulatory scrutiny, potential exposure to foreign sanctions regimes, and higher AML risk.\n\n**WHERE TO FOCUS**  \n- Examine the details of the planned cross\u2011border transfers: destination countries, counterparties, transaction purpose, and expected frequency/volume.  \n- Verify that the destinations are not on any restricted or high\u2011risk lists and that the transaction purpose aligns with the documented source of wealth.  \n- Request any additional supporting documents (e.g., contracts, invoices, or letters of intent) that explain the business or personal rationale for the transfers.  \n- Perform a targeted AML/CTF check on the counterparties and jurisdictions involved before the client proceeds with the transactions.",
+    "timestamp": "2026-08-05T02:00:51.968092-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+  },
+  {
+    "agent": "wealth",
+    "input": {
+      "source_of_wealth": "Inheritance from deceased parent estate",
+      "source_of_funds": "International estate transfer from US estate account",
+      "declared_amount": 8000000,
+      "crypto_involved": false,
+      "wealth_document_present": true,
+      "bank_statements_present": true,
+      "crypto_records_present": false
+    },
+    "finding": "WEALTH_SUPPORTED",
+    "reasoning": "Wealth document present. Declared source of funds: International estate transfer from US estate account. Bank statements present. All required wealth and funds documents are present. No crypto exposure.",
+    "timestamp": "2026-08-06T02:47:53.656746-04:00",
+    "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
+  },
+  {
+    "agent": "risk_engine",
+    "input": {
+      "identity": "IDENTITY_VERIFIED",
+      "screening": "CROSS_BORDER_FLAGGED",
+      "wealth": "WEALTH_SUPPORTED"
+    },
+    "finding": "MEDIUM",
+    "reasoning": "One risk issue identified: CROSS_BORDER_FLAGGED.",
+    "timestamp": "2026-08-06T02:47:53.673414-04:00",
+    "regulatory_basis": "FINTRAC - risk-based approach; a client risk rating is required for every business relationship",
+    "verified": [
+      "Identity verification complete",
+      "No sanctions or PEP indicators found",
+      "Source of wealth and funds supported by documents"
+    ],
+    "needs_review": [
+      "Cross-border transactions expected. Requires review."
+    ]
+  },
+  {
+    "agent": "case_summary_llm",
+    "model": "groq/openai/gpt-oss-120b",
+    "input": {
+      "client_name": "Robert Whitmore",
+      "risk_signal_received": "MEDIUM",
+      "verified": [
+        "Identity verification complete",
+        "No sanctions or PEP indicators found",
+        "Source of wealth and funds supported by documents"
+      ],
+      "needs_review": [
+        "Cross-border transactions expected. Requires review."
+      ]
+    },
+    "finding": "SUMMARY_GENERATED",
+    "reasoning": "**OPENING LINE**  \nRobert Whitmore is a medium\u2011risk client.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions or politically exposed person (PEP) matches were found.  \n- The source of wealth and source of funds have been documented and are satisfactory.\n\n**WHAT NEEDS REVIEW**  \n- The client is expected to conduct cross\u2011border transactions. This matters because moving money across jurisdictions can increase exposure to money\u2011laundering, terrorist financing, and regulatory compliance risks, especially if the destinations are high\u2011risk countries or involve complex structures.\n\n**WHERE TO FOCUS**  \n- Obtain a detailed description of the anticipated cross\u2011border transactions, including the purpose of each transfer, the countries involved, and the counterparties.  \n- Request any supporting contracts, invoices, or agreements that explain the business or personal reason for the transfers.  \n- Perform enhanced due\u2011diligence screening on the destination jurisdictions and counterparties, checking for sanctions, watch\u2011list matches, and adverse media.  \n- Document the findings and any additional risk mitigants (e.g., transaction limits, monitoring plans) before proceeding.",
+    "timestamp": "2026-08-06T02:47:54.877267-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+  }
+]

@@ -10,8 +10,5 @@ __pycache__/
 # UV
 uv.lock
 
-# Traces — synthetic test cases, regenerated on every run
-traces/
-
 # VS Code
 .vscode/
