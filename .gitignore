@@ -12,3 +12,5 @@ uv.lock
 
 # VS Code
 .vscode/
+
+traces/archive/
