@@ -51,7 +51,7 @@ class KYCState(TypedDict, total=False):
 def orchestrator_node(state: KYCState) -> dict:
     case = state["case"]
     result = run_orchestrator(case)
-    run_biz = "business" in result["required_checks"]
+    run_biz = "business" in result["plan"]["required_checks"]
     return {
         "orchestrator_output": result,
         "run_business": run_biz,

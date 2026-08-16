@@ -7,22 +7,15 @@ def _toronto_now_iso():
     return datetime.now(ZoneInfo("America/Toronto")).isoformat()
 
 
-def _is_yes(value):
-    # Normalizes boolean fields from case dictionary
-    if isinstance(value, bool):
-        return value
-    return str(value).strip().lower() == "yes"
-
-
 def run_orchestrator(case: dict) -> dict:
     """
     Orchestrator — creates the agent execution plan.
     Does NOT run agents. Does NOT make risk decisions.
     Decides which agents are needed based on the case profile.
 
-    Returns the same six-field audit shape as every other agent, so the
-    plan itself lands in the case trace. Without it the trace begins at
-    identity and nothing records why those agents were chosen.
+    Carries the six audit fields every agent record has, plus the plan
+    itself. Without this record the trace begins at identity, and nothing
+    documents why those agents were chosen.
     """
 
     case_id = case["case_id"]
@@ -87,11 +80,11 @@ def run_orchestrator(case: dict) -> dict:
             "OSFI E-23 - agent selection and input scope must be "
             "documented and independently reviewable"
         ),
-        # Consumed by workflow.py and retained for the existing trace shape
-        "case_id": case_id,
-        "orchestrator_name": "kyc_orchestrator",
-        "execution_status": "COMPLETED",
-        "created_at": _toronto_now_iso(),
-        "required_checks": required_checks,
-        "dispatch_instructions": dispatch_instructions,
+        # The plan itself. Every record carries the six audit fields, and
+        # some carry one more. The summary agent names its model here.
+        # The orchestrator names which agents run and what each may read.
+        "plan": {
+            "required_checks": required_checks,
+            "dispatch_instructions": dispatch_instructions,
+        },
     }

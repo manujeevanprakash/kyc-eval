@@ -7,42 +7,40 @@
     },
     "finding": "PLAN_CREATED",
     "reasoning": "Required checks: identity, screening, wealth. Business review not required based on the declared source of wealth.",
-    "timestamp": "2026-08-15T23:09:41.239328-04:00",
+    "timestamp": "2026-08-16T01:26:08.082492-04:00",
     "regulatory_basis": "OSFI E-23 - agent selection and input scope must be documented and independently reviewable",
-    "case_id": "KYC-001",
-    "orchestrator_name": "kyc_orchestrator",
-    "execution_status": "COMPLETED",
-    "created_at": "2026-08-15T23:09:41.239344-04:00",
-    "required_checks": [
-      "identity",
-      "screening",
-      "wealth"
-    ],
-    "dispatch_instructions": {
-      "identity": {
-        "use": [
-          "client.full_name",
-          "client.nationality",
-          "client.residency",
-          "documents.government_id"
-        ]
-      },
-      "screening": {
-        "use": [
-          "client.full_name",
-          "client.nationality",
-          "client.pep_declared",
-          "client.cross_border_transactions"
-        ]
-      },
-      "wealth": {
-        "use": [
-          "source_of_wealth",
-          "source_of_funds",
-          "documents.wealth_document",
-          "documents.bank_statements",
-          "documents.crypto_records"
-        ]
+    "plan": {
+      "required_checks": [
+        "identity",
+        "screening",
+        "wealth"
+      ],
+      "dispatch_instructions": {
+        "identity": {
+          "use": [
+            "client.full_name",
+            "client.nationality",
+            "client.residency",
+            "documents.government_id"
+          ]
+        },
+        "screening": {
+          "use": [
+            "client.full_name",
+            "client.nationality",
+            "client.pep_declared",
+            "client.cross_border_transactions"
+          ]
+        },
+        "wealth": {
+          "use": [
+            "source_of_wealth",
+            "source_of_funds",
+            "documents.wealth_document",
+            "documents.bank_statements",
+            "documents.crypto_records"
+          ]
+        }
       }
     }
   },
@@ -56,7 +54,7 @@
     },
     "finding": "IDENTITY_VERIFIED",
     "reasoning": "Identity evidence is present for Sarah Mitchell. Government ID uploaded. Nationality and residency declared.",
-    "timestamp": "2026-08-15T23:09:41.240545-04:00",
+    "timestamp": "2026-08-16T01:26:08.083927-04:00",
     "regulatory_basis": "PCMLTFA - identity verification required before account opening"
   },
   {
@@ -69,7 +67,7 @@
     },
     "finding": "NO_SCREENING_INDICATORS",
     "reasoning": "No sanctions match found for Sarah Mitchell. No PEP indicators. No cross-border activity declared.",
-    "timestamp": "2026-08-15T23:09:41.241364-04:00",
+    "timestamp": "2026-08-16T01:26:08.084901-04:00",
     "regulatory_basis": "PCMLTFA s.9.6 - sanctions screening performed, no match returned"
   },
   {
@@ -85,7 +83,7 @@
     },
     "finding": "WEALTH_SUPPORTED",
     "reasoning": "Wealth document present. Declared source of funds: Salary transfer from employer. Bank statements present. All required wealth and funds documents are present. No crypto exposure.",
-    "timestamp": "2026-08-15T23:09:41.241897-04:00",
+    "timestamp": "2026-08-16T01:26:08.085539-04:00",
     "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
   },
   {
@@ -97,7 +95,7 @@
     },
     "finding": "LOW",
     "reasoning": "All checks passed. No issues identified.",
-    "timestamp": "2026-08-15T23:09:41.242895-04:00",
+    "timestamp": "2026-08-16T01:26:08.086491-04:00",
     "regulatory_basis": "FINTRAC - risk-based approach; a client risk rating is required for every business relationship",
     "verified": [
       "Identity verification complete",
@@ -121,7 +119,7 @@
     },
     "finding": "SUMMARY_GENERATED",
     "reasoning": "**OPENING LINE**  \nClient Sarah Mitchell has been flagged with a LOW risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions or politically exposed person (PEP) matches were found.  \n- Documentation supporting the source of her wealth and the source of funds has been provided and accepted.\n\n**WHAT NEEDS REVIEW**  \n- None \u2013 all required items have been satisfied.\n\n**WHERE TO FOCUS**  \n- No further action is required on verification items at this time. Proceed with the standard onboarding steps for a low\u2011risk client.",
-    "timestamp": "2026-08-15T23:09:42.152192-04:00",
+    "timestamp": "2026-08-16T01:26:08.964265-04:00",
     "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
   }
 ]
