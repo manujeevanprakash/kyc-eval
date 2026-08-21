@@ -11,12 +11,12 @@ outputs can be proved to a compliance team and a regulator.
 
 - Four deterministic agents running in parallel (Identity, Screening, Wealth, Business)
 - One LLM agent (Case Summary) writing plain English for a compliance officer
-- A rules-based Risk Engine producing a risk signal with no scoring model
-- A sanctions candidate match handled differently from a confirmed match
-- Formal deferral (CANNOT_CLASSIFY) when evidence is insufficient, naming the missing documents
-- A six-field audit record per agent, citing the regulation the decision was made under
-- LangSmith tracing for every run
-- Six golden test cases with expected outcomes
+- A rules-based Risk Engine producing a risk tier with no scoring model
+- Sanctions candidate match handled differently from a confirmed match
+- Formal deferral (CANNOT_CLASSIFY) when evidence is insufficient
+- Business review with two branches: completed sale and ongoing ownership
+- A six-field audit record per agent, citing the requirement behind each finding
+- Seven test cases with expected outcomes
 
 ## Setup
 
@@ -45,58 +45,64 @@ LANGCHAIN_PROJECT=kyc-eval
 MODEL=groq/openai/gpt-oss-120b
 ```
 
-**4. Run all six test cases**
+**4. Run all seven test cases**
 
 ```
-uv run python run.py
+uv run run.py
 ```
 
-## The six test cases
+## The seven test cases
 
-| Case | Client | Risk indicators | Expected signal |
+| Case | Client | What it tests | Expected signal |
 |---|---|---|---|
-| KYC-001 | Sarah Mitchell | None | LOW |
-| KYC-002 | Robert Whitmore | Inherited wealth, cross-border | MEDIUM |
-| KYC-003 | James Whitmore | PEP, crypto, business sale | HIGH |
-| KYC-004 | Daniel Hayes | Missing documents | CANNOT_CLASSIFY |
+| KYC-001 | Sarah Mitchell | Clean case, salary income | LOW |
+| KYC-002 | Robert Whitmore | Inherited wealth, cross-border activity | MEDIUM |
+| KYC-003 | James Whitmore | PEP confirmed, crypto funds, business sale | HIGH |
+| KYC-004 | Daniel Hayes | Missing documents and declarations | CANNOT_CLASSIFY |
 | KYC-005 | Michael Anderson (b. 1972) | Sanctions name match, identifiers differ | HIGH |
-| KYC-006 | Michael Anderson (b. 1959) | Sanctions match confirmed | HIGH |
+| KYC-006 | Michael Anderson (b. 1959) | Sanctions name and DOB both match | HIGH |
+| KYC-007 | Gordon Fraser | Business ownership, no income evidence | MEDIUM |
 
-KYC-005 and KYC-006 differ by one field, the date of birth, and produce
-opposite operational outcomes. One is adjudicated. The other is a hard stop.
+Cases are named by what varies, not by their expected outcome. KYC-005 and
+KYC-006 share a client name deliberately — one field of difference, opposite
+legal consequences.
 
 ## Project structure
 
 ```
 kyc-eval/
 ├── agents/
-│   ├── identity.py                  # Deterministic identity verification
-│   ├── screening.py                 # Sanctions and PEP screening
-│   ├── wealth.py                    # Source of wealth and funds review
-│   ├── business.py                  # Business structure review
-│   └── orchestrator.py              # Routes cases to the right agents
+│   ├── identity.py                  # Document presence and profile completeness
+│   ├── screening.py                 # Sanctions and PEP registry matching
+│   ├── wealth.py                    # Personal source of wealth, funds, cross-border
+│   ├── business.py                  # Business sale or ownership against registry
+│   └── orchestrator.py              # Decides which agents run and what each reads
 ├── engine/
 │   ├── risk_engine.py               # Rules-based risk classification
 │   └── case_summary_llm.py          # The only LLM in the workflow
 ├── audit/
 │   └── store.py                     # Writes the full trace once per run
-├── cases/
-│   ├── case_low.py
-│   ├── case_medium.py
-│   ├── case_high.py
-│   ├── case_incomplete.py
-│   ├── case_sanctions_potential.py
-│   └── case_sanctions_confirmed.py
+├── cases/                           # Seven test cases, named by what varies
 ├── eval/                            # Code grader and model grader (coming soon)
 ├── traces/                          # Audit records as JSON, regenerated each run
 ├── workflow.py                      # LangGraph graph
-├── run.py                           # Entry point
-├── demo_nondeterminism.py           # Standalone demo for a published article
-├── config.py                        # API keys, model, regulatory basis
+├── run.py                           # Entry point — runs all seven cases
+├── config.py                        # API keys, model, regulatory basis per finding
 └── CHANGELOG.md
 ```
 
-## A note on how the trace is written
+## How the case files are shaped
+
+Each case carries personal wealth and business wealth separately.
+
+Personal wealth goes to the Wealth and Funds agent. Business wealth goes to
+the Business Review agent, which checks the company against a registry.
+
+The orchestrator reads the case to decide which agents run. If
+`source_of_wealth_business` exists, the Business Review agent is added to
+the plan. Otherwise only three agents run.
+
+## How the trace is written
 
 The trace is written once, at the end of each run, rather than by each agent
 as it finishes. The four specialist agents run in parallel, and a
@@ -104,18 +110,34 @@ read-modify-write from inside each node loses records when two of them reach
 the file at the same time.
 
 Each record carries six fields: agent, input, finding, reasoning, timestamp
-and regulatory basis. The Case Summary agent adds a seventh, naming the model
-it ran on.
+and regulatory_basis. Some agents carry more. The Case Summary agent names
+the model it ran on. Every agent records whether external verification was
+performed, which in this prototype is always false.
+
+## How the orchestrator builds the plan
+
+The orchestrator answers three questions for each case.
+
+Which agents run. Identity, screening and wealth always run. Business runs
+only when the case declares business wealth.
+
+What each agent may read. The dispatch instructions list the exact fields,
+built from the case rather than hardcoded. If the client declared crypto,
+the wealth agent's list includes crypto records. If they didn't, it doesn't.
+
+Why each check is required. Each dispatch instruction carries a
+regulatory_requirement field stating the obligation behind the check.
 
 ## A note on regulatory citations
 
-Every agent records the obligation its decision was made under, not the
-obligation to keep a record of it.
+Every agent records the obligation its finding creates alongside the finding
+itself. These are written in plain terms without section numbers. In a real
+bank, compliance supplies the exact provision. What matters for evaluation
+is that every step carries one.
 
-The four deterministic agents apply rules rather than statistical methods,
-so they cite the PCMLTFA or FINTRAC requirement they are executing. OSFI
-E-23 governs models, and the Case Summary agent is the only component here
-that uses one, so it is the only component that cites E-23.
+The four deterministic agents apply rules rather than statistical methods.
+The Case Summary agent is the only component that uses a model, so it is the
+only component that cites the model governance obligation.
 
 ## Part of a larger series
 
