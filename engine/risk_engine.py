@@ -246,13 +246,14 @@ def run_risk_engine(
         risk_signal = "HIGH"
         risk_reason = (
             "PEP status confirmed and crypto origin not established. "
-            "Enhanced due diligence required."
+            "Enhanced due diligence required under FINTRAC guidelines."
         )
 
     elif any(i[0] == "screening" and "PEP" in i[1] for i in issues):
         risk_signal = "HIGH"
         risk_reason = (
-            "PEP status identified. Enhanced due diligence required."
+            "PEP status identified. "
+            "Enhanced due diligence required under FINTRAC guidelines."
         )
 
     elif any(i[1] == "SANCTIONS_POTENTIAL_MATCH" for i in issues):

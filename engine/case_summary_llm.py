@@ -1,14 +1,15 @@
-import json
+import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from litellm import completion
-from config import GROQ_API_KEY, MODEL, E23_EXPLAINABILITY 
+from config import GROQ_API_KEY, MODEL, E23_EXPLAINABILITY
 
-import os
 os.environ["GROQ_API_KEY"] = GROQ_API_KEY
 
 
 def _toronto_now_iso():
+    # Toronto time for every timestamp, since this prototype is built
+    # around a Canadian bank.
     return datetime.now(ZoneInfo("America/Toronto")).isoformat()
 
 
@@ -29,12 +30,7 @@ Your summary must follow this exact structure:
 One sentence stating the client name and risk signal.
 
 2. WHAT HAS BEEN VERIFIED
-List every verified item clearly. For example:
-- Identity verification is complete
-- No sanctions match was found
-- No adverse media or watchlist concerns
-- Wealth documents and bank statements are present
-- Business sale context is supported
+List every verified item clearly.
 
 3. WHAT NEEDS REVIEW
 List every item that needs attention. Explain why each one matters 
@@ -52,16 +48,21 @@ Rules:
 - Keep the summary under 250 words
 - Write in plain English that a compliance officer can act on immediately"""
 
+
 def run_case_summary_llm(
     case: dict,
     risk_engine_output: dict,
 ) -> dict:
     """
-    Case Summary LLM Agent — the one LLM in this workflow.
-    Takes the Risk Engine structured output and writes
-    plain English for the compliance officer.
+    Case Summary Agent — the only component in this workflow that uses
+    a model.
 
-    This is where the model grader applies in your eval framework.
+    It takes the Risk Engine's output and writes plain English for the
+    compliance officer. It does not classify anything and it does not
+    decide anything. The risk signal arrives already decided.
+
+    Everything it receives comes from the Risk Engine. Nothing reaches
+    it from the case file or from any of the specialist agents directly.
     """
 
     client_name = case["client"]["full_name"]
@@ -70,7 +71,8 @@ def run_case_summary_llm(
     needs_review = risk_engine_output.get("needs_review", [])
     reasoning = risk_engine_output["reasoning"]
 
-    # Build the user message — structured input to the LLM
+    # The structured input the model actually sees. Four things, and
+    # nothing else.
     user_message = f"""Client name: {client_name}
 Risk signal: {risk_signal}
 
@@ -84,7 +86,6 @@ Risk Engine reasoning: {reasoning}
 
 Write the compliance officer summary now."""
 
-    # Call the LLM
     response = completion(
         model=MODEL,
         messages=[
@@ -92,12 +93,14 @@ Write the compliance officer summary now."""
             {"role": "user", "content": user_message},
         ],
         max_tokens=600,
-        temperature=0.1,  # Low temperature for consistency
+        # Low, but not zero. The same case still produces different
+        # wording between runs, which is the whole reason this agent
+        # needs evaluating rather than testing.
+        temperature=0.1,
     )
 
     summary_text = response.choices[0].message.content.strip()
 
-    # 5-field audit record
     return {
         "agent": "case_summary_llm",
         "model": MODEL,

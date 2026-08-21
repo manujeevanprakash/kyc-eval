@@ -8,7 +8,7 @@
     },
     "finding": "PLAN_CREATED",
     "reasoning": "Required checks: identity, screening, wealth. Business review not required based on whether the case declares business wealth.",
-    "timestamp": "2026-08-20T09:02:58.729298-04:00",
+    "timestamp": "2026-08-21T05:43:00.797805-04:00",
     "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
@@ -58,7 +58,7 @@
     },
     "finding": "IDENTITY_VERIFIED",
     "reasoning": "Identity evidence is present for Robert Whitmore. Government ID uploaded. Nationality and residency declared.",
-    "timestamp": "2026-08-20T09:02:58.731528-04:00",
+    "timestamp": "2026-08-21T05:43:00.798886-04:00",
     "regulatory_basis": "PCMLTFA - identity verification required before account opening",
     "method": "GOVERNMENT_PHOTO_ID",
     "external_verification_performed": false
@@ -72,7 +72,7 @@
     },
     "finding": "NO_SCREENING_INDICATORS",
     "reasoning": "No sanctions match found for Robert Whitmore. No PEP indicators.",
-    "timestamp": "2026-08-20T09:02:58.732661-04:00",
+    "timestamp": "2026-08-21T05:43:00.800588-04:00",
     "regulatory_basis": "PCMLTFA - screening completed with no indicators found",
     "lists_checked": [
       "sanctions",
@@ -97,7 +97,7 @@
     },
     "finding": "WEALTH_SUPPORTED_CROSS_BORDER",
     "reasoning": "Wealth document present. Declared source of wealth: Inheritance from deceased parent estate. Bank statements present. Declared source of funds: International estate transfer from US estate account. Cross-border transactions expected to United States. Requires compliance officer review.",
-    "timestamp": "2026-08-20T09:02:58.733605-04:00",
+    "timestamp": "2026-08-21T05:43:00.801411-04:00",
     "regulatory_basis": "Cross-border transfers increase exposure and require compliance officer review",
     "document_contents_reviewed": false
   },
@@ -110,7 +110,7 @@
     },
     "finding": "MEDIUM",
     "reasoning": "One compliance issue identified: CROSS_BORDER.",
-    "timestamp": "2026-08-20T09:02:58.734835-04:00",
+    "timestamp": "2026-08-21T05:43:00.802514-04:00",
     "regulatory_basis": "Medium risk - enhanced monitoring recommended",
     "verified": [
       "Identity verification complete",
@@ -138,8 +138,8 @@
       ]
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**OPENING LINE**  \nRobert Whitmore is a medium\u2011risk client.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions or politically exposed person matches were found.  \n- Wealth documents and bank statements have been provided and are on file.\n\n**WHAT NEEDS REVIEW**  \n- The client is expected to conduct cross\u2011border transactions. This matters because international transfers can involve additional anti\u2011money\u2011laundering checks, tax reporting obligations, and differing regulatory regimes that may increase the client\u2019s overall risk profile.\n\n**WHERE TO FOCUS**  \n- Obtain a detailed description of the anticipated cross\u2011border transactions, including the countries involved, the purpose of each transfer, and the expected frequency and volume.  \n- Request supporting documentation for the source of funds related to those transfers (e.g., sale agreements, contracts, invoices).  \n- Perform an enhanced due\u2011diligence review of the counterparties and jurisdictions to ensure they are not high\u2011risk or subject to sanctions.  \n- Verify that the client\u2019s transaction plans comply with Canadian AML/CTF requirements and any relevant foreign reporting thresholds.  \n\nThese steps will provide the necessary information to complete the risk assessment for the cross\u2011border activity.",
-    "timestamp": "2026-08-20T09:03:00.038679-04:00",
+    "reasoning": "**OPENING LINE**  \nRobert Whitmore is a medium\u2011risk client.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions or politically exposed person (PEP) matches were found.  \n- Wealth documents and bank statements have been provided and are on file.\n\n**WHAT NEEDS REVIEW**  \n- Expected cross\u2011border transactions require further examination. Because funds will move between jurisdictions, we need to confirm the purpose, source, and destination of those transfers to ensure they comply with anti\u2011money\u2011laundering (AML) and sanctions rules.\n\n**WHERE TO FOCUS**  \n- Obtain a detailed description of the anticipated cross\u2011border transfers, including the countries involved, the business or personal purpose, and the expected frequency and amounts.  \n- Request supporting documentation such as contracts, invoices, or letters of intent that justify the transfers.  \n- Perform a targeted sanctions and watch\u2011list check on the counterparties and jurisdictions identified.  \n- Conduct a risk\u2011based AML review of the transaction flow, looking for any red flags such as unusually large or rapid movements of funds.  \n\nProceed with gathering the above information and completing the focused review before moving the case forward.",
+    "timestamp": "2026-08-21T05:43:02.011139-04:00",
     "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]
