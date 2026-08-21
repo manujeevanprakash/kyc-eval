@@ -8,7 +8,7 @@
     },
     "finding": "PLAN_CREATED",
     "reasoning": "Required checks: identity, screening, wealth. Business review not required based on whether the case declares business wealth.",
-    "timestamp": "2026-08-21T05:43:03.623905-04:00",
+    "timestamp": "2026-08-21T06:48:15.065465-04:00",
     "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
@@ -58,7 +58,7 @@
     },
     "finding": "IDENTITY_INCOMPLETE",
     "reasoning": "Residency not declared.",
-    "timestamp": "2026-08-21T05:43:03.625359-04:00",
+    "timestamp": "2026-08-21T06:48:15.066502-04:00",
     "regulatory_basis": "PCMLTFA - identity verification required before account opening; cannot proceed with incomplete information",
     "method": "GOVERNMENT_PHOTO_ID",
     "external_verification_performed": false
@@ -72,7 +72,7 @@
     },
     "finding": "NO_SCREENING_INDICATORS",
     "reasoning": "No sanctions match found for Daniel Hayes. No PEP indicators.",
-    "timestamp": "2026-08-21T05:43:03.627842-04:00",
+    "timestamp": "2026-08-21T06:48:15.067425-04:00",
     "regulatory_basis": "PCMLTFA - screening completed with no indicators found",
     "lists_checked": [
       "sanctions",
@@ -95,7 +95,7 @@
     },
     "finding": "WEALTH_EVIDENCE_INCOMPLETE",
     "reasoning": "Wealth document not uploaded. Bank statements not uploaded.",
-    "timestamp": "2026-08-21T05:43:03.628673-04:00",
+    "timestamp": "2026-08-21T06:48:15.068688-04:00",
     "regulatory_basis": "PCMLTFA - source of wealth and funds verification cannot be completed; required documents missing",
     "document_contents_reviewed": false
   },
@@ -108,7 +108,7 @@
     },
     "finding": "CANNOT_CLASSIFY",
     "reasoning": "Case completeness is 43%, below the 70% threshold. Additional documents or client information must be provided before this case can be classified.",
-    "timestamp": "2026-08-21T05:43:03.629799-04:00",
+    "timestamp": "2026-08-21T06:48:15.069785-04:00",
     "regulatory_basis": "Insufficient information to classify risk; missing documents or declarations must be obtained",
     "verified": [
       "No sanctions or PEP indicators found"
@@ -134,8 +134,8 @@
       ]
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**OPENING LINE**  \nClient\u202fDaniel\u202fHayes \u2013 risk signal cannot be classified at this time.  \n\n**WHAT HAS BEEN VERIFIED**  \n- No sanctions or politically exposed person (PEP) indicators were found.  \n\n**WHAT NEEDS REVIEW**  \n- **Identity verification is incomplete** \u2013 without a confirmed government\u2011issued ID and proof of address we cannot be sure the person is who they claim to be.  \n- **Wealth documents are missing** \u2013 we lack the financial evidence needed to assess the source and legitimacy of the client\u2019s assets.  \n\n**WHERE TO FOCUS**  \n- Request Daniel to provide a clear, unexpired government photo ID (passport or driver\u2019s licence) and a recent utility bill or bank statement showing his residential address. Verify that the details match the information already on file.  \n- Ask for up\u2011to\u2011date wealth documentation, such as audited financial statements, recent bank statements, investment account summaries, or property valuation reports that demonstrate the origin and amount of his assets.  \n\nOnce these items are received and validated, the case can be re\u2011evaluated for classification.",
-    "timestamp": "2026-08-21T05:43:04.859791-04:00",
+    "reasoning": "**OPENING LINE**  \nClient\u202fDaniel\u202fHayes \u2013 risk signal:\u202fCANNOT_CLASSIFY.  \n\n**WHAT HAS BEEN VERIFIED**  \n- No sanctions or politically\u2011exposed\u2011person (PEP) indicators were found.  \n\n**WHAT NEEDS REVIEW**  \n- **Identity verification incomplete** \u2013 Without a fully verified identity we cannot confirm that the person applying is truly Daniel\u202fHayes, which is a core requirement for any new client.  \n- **Required wealth documents are missing** \u2013 The bank needs proof of the client\u2019s source of wealth and net\u2011worth to assess suitability for high\u2011net\u2011worth services and to meet anti\u2011money\u2011laundering standards.  \n\n**WHERE TO FOCUS**  \n- **Identity verification**: Request a clear, government\u2011issued photo ID (e.g., passport or driver\u2019s licence) and a recent utility bill or bank statement showing the same residential address. Ensure the documents are authentic and match the information already on file.  \n- **Wealth documentation**: Ask the client to provide recent financial statements, tax returns, or audited net\u2011worth statements that demonstrate the origin and amount of assets they intend to place with the bank. Clarify any specific formats the bank requires.  \n\nComplete these items before proceeding, as the case is currently only 43\u202f% complete and cannot be classified until the missing information is supplied.",
+    "timestamp": "2026-08-21T06:48:16.297222-04:00",
     "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]

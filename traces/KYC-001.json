@@ -8,7 +8,7 @@
     },
     "finding": "PLAN_CREATED",
     "reasoning": "Required checks: identity, screening, wealth. Business review not required based on whether the case declares business wealth.",
-    "timestamp": "2026-08-21T05:42:59.926038-04:00",
+    "timestamp": "2026-08-21T06:48:11.539633-04:00",
     "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
@@ -58,7 +58,7 @@
     },
     "finding": "IDENTITY_VERIFIED",
     "reasoning": "Identity evidence is present for Sarah Mitchell. Government ID uploaded. Nationality and residency declared.",
-    "timestamp": "2026-08-21T05:42:59.927215-04:00",
+    "timestamp": "2026-08-21T06:48:11.540910-04:00",
     "regulatory_basis": "PCMLTFA - identity verification required before account opening",
     "method": "GOVERNMENT_PHOTO_ID",
     "external_verification_performed": false
@@ -72,7 +72,7 @@
     },
     "finding": "NO_SCREENING_INDICATORS",
     "reasoning": "No sanctions match found for Sarah Mitchell. No PEP indicators.",
-    "timestamp": "2026-08-21T05:42:59.928081-04:00",
+    "timestamp": "2026-08-21T06:48:11.541737-04:00",
     "regulatory_basis": "PCMLTFA - screening completed with no indicators found",
     "lists_checked": [
       "sanctions",
@@ -95,7 +95,7 @@
     },
     "finding": "WEALTH_SUPPORTED",
     "reasoning": "Wealth document present. Declared source of wealth: Salary and annual bonuses accumulated over 20 years. Bank statements present. Declared source of funds: Salary transfer from employer. All required wealth and funds documents are present. No crypto exposure and no cross-border activity declared.",
-    "timestamp": "2026-08-21T05:42:59.928671-04:00",
+    "timestamp": "2026-08-21T06:48:11.542232-04:00",
     "regulatory_basis": "PCMLTFA - source of wealth and funds verification completed",
     "document_contents_reviewed": false
   },
@@ -108,7 +108,7 @@
     },
     "finding": "LOW",
     "reasoning": "All compliance checks passed. No issues identified.",
-    "timestamp": "2026-08-21T05:42:59.929724-04:00",
+    "timestamp": "2026-08-21T06:48:11.543047-04:00",
     "regulatory_basis": "Low risk - standard onboarding procedures apply",
     "verified": [
       "Identity verification complete",
@@ -132,8 +132,8 @@
       "needs_review": []
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**OPENING LINE**  \nClient Sarah Mitchell has been flagged with a LOW risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions or politically exposed person (PEP) matches were found.  \n- Source of wealth and source of funds are supported by the provided documentation.\n\n**WHAT NEEDS REVIEW**  \n- None.\n\n**WHERE TO FOCUS**  \n- Since there are no outstanding items, no further documentation or investigation is required at this stage.",
-    "timestamp": "2026-08-21T05:43:00.788400-04:00",
+    "reasoning": "**OPENING LINE**  \nClient\u202fSarah\u202fMitchell is flagged with a\u202fLOW\u202frisk signal.  \n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification has been completed.  \n- No sanctions or politically\u2011exposed\u2011person (PEP) indicators were found.  \n- The source of wealth and source of funds have been supported by the required documentation.  \n\n**WHAT NEEDS REVIEW**  \n- None \u2013 all required items have been successfully verified.  \n\n**WHERE TO FOCUS**  \n- Since there are no outstanding items, no further compliance checks are needed at this stage. Proceed with the standard onboarding workflow for a low\u2011risk client.",
+    "timestamp": "2026-08-21T06:48:12.531534-04:00",
     "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]

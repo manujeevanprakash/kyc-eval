@@ -8,7 +8,7 @@
     },
     "finding": "PLAN_CREATED",
     "reasoning": "Required checks: identity, screening, wealth. Business review not required based on whether the case declares business wealth.",
-    "timestamp": "2026-08-21T05:43:06.003618-04:00",
+    "timestamp": "2026-08-21T06:48:17.426127-04:00",
     "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
@@ -58,7 +58,7 @@
     },
     "finding": "IDENTITY_VERIFIED",
     "reasoning": "Identity evidence is present for Michael Anderson. Government ID uploaded. Nationality and residency declared.",
-    "timestamp": "2026-08-21T05:43:06.005010-04:00",
+    "timestamp": "2026-08-21T06:48:17.427030-04:00",
     "regulatory_basis": "PCMLTFA - identity verification required before account opening",
     "method": "GOVERNMENT_PHOTO_ID",
     "external_verification_performed": false
@@ -72,7 +72,7 @@
     },
     "finding": "SANCTIONS_MATCH_CONFIRMED",
     "reasoning": "Sanctions match confirmed for Michael Anderson. Name and date of birth both match a listed person. Hard stop. No discretion permitted.",
-    "timestamp": "2026-08-21T05:43:06.006091-04:00",
+    "timestamp": "2026-08-21T06:48:17.428458-04:00",
     "regulatory_basis": "PCMLTFA - dealing with a listed person is prohibited; hard stop, no discretion",
     "lists_checked": [
       "sanctions",
@@ -95,7 +95,7 @@
     },
     "finding": "WEALTH_SUPPORTED",
     "reasoning": "Wealth document present. Declared source of wealth: Private investment holdings. Bank statements present. Declared source of funds: Transfer from an overseas investment account. All required wealth and funds documents are present. No crypto exposure and no cross-border activity declared.",
-    "timestamp": "2026-08-21T05:43:06.007510-04:00",
+    "timestamp": "2026-08-21T06:48:17.429415-04:00",
     "regulatory_basis": "PCMLTFA - source of wealth and funds verification completed",
     "document_contents_reviewed": false
   },
@@ -108,7 +108,7 @@
     },
     "finding": "HIGH",
     "reasoning": "Confirmed sanctions match. Hard stop. Case cannot proceed.",
-    "timestamp": "2026-08-21T05:43:06.009344-04:00",
+    "timestamp": "2026-08-21T06:48:17.430632-04:00",
     "regulatory_basis": "High risk - enhanced due diligence required",
     "verified": [
       "Identity verification complete",
@@ -134,8 +134,8 @@
       ]
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**OPENING LINE**  \nMichael Anderson is flagged with a HIGH risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- Source of wealth and source of funds have been supported by the client\u2019s documentation.\n\n**WHAT NEEDS REVIEW**  \n- A sanctions match has been identified. This matters because any link to a sanctioned individual, entity, or jurisdiction could expose the bank to regulatory penalties and reputational damage, and it triggers a mandatory halt on further processing until cleared.\n\n**WHERE TO FOCUS**  \n- Conduct a detailed review of the sanctions hit: verify the exact name, address, and any reference numbers against the sanction list to confirm it is a true positive.  \n- Request additional documentation from the client that could clarify the nature of the match (e.g., proof of non\u2011association, corporate structure, or evidence that the match is a false positive).  \n- Engage the bank\u2019s sanctions compliance team or legal counsel to assess whether an exemption or a de\u2011risking action is possible.  \n- If the match remains unresolved, prepare to file the required internal escalation and consider filing a Suspicious Activity Report (SAR) as per policy.  \n\nProceed with the above steps before any further onboarding actions can be taken.",
-    "timestamp": "2026-08-21T05:43:07.423794-04:00",
+    "reasoning": "**1. OPENING LINE**  \nMichael Anderson \u2013 HIGH risk signal.\n\n**2. WHAT HAS BEEN VERIFIED**  \n- Identity verification has been completed.  \n- Source of wealth and source of funds have been supported by the required documentation.\n\n**3. WHAT NEEDS REVIEW**  \n- The sanctions screening returned a match. This matters because a match to a sanctions list could mean the client is prohibited from doing business with the bank, exposing us to legal and regulatory penalties. The match must be confirmed as a true positive or cleared as a false positive before any further action.\n\n**4. WHERE TO FOCUS**  \n- Re\u2011examine the sanctions screening result: pull the detailed match record, review the name, date of birth, address, and any other identifiers used in the check.  \n- Compare the client\u2011provided information with the sanctions list entry to determine if it is a genuine match or a false positive (e.g., similar name, data entry error).  \n- If the match appears legitimate, gather any additional documentation the client can provide to demonstrate they are not a sanctioned individual or entity (e.g., legal name change, de\u2011listing evidence).  \n- Document the findings and, if uncertainty remains, escalate the case to the senior sanctions compliance team for a final determination.",
+    "timestamp": "2026-08-21T06:48:18.562778-04:00",
     "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]

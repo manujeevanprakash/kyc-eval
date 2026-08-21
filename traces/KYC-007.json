@@ -8,7 +8,7 @@
     },
     "finding": "PLAN_CREATED",
     "reasoning": "Required checks: identity, screening, wealth, business. Business review included based on whether the case declares business wealth.",
-    "timestamp": "2026-08-21T05:43:07.455087-04:00",
+    "timestamp": "2026-08-21T06:48:18.567335-04:00",
     "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
@@ -69,7 +69,7 @@
     },
     "finding": "IDENTITY_VERIFIED",
     "reasoning": "Identity evidence is present for Gordon Fraser. Government ID uploaded. Nationality and residency declared.",
-    "timestamp": "2026-08-21T05:43:07.456327-04:00",
+    "timestamp": "2026-08-21T06:48:18.568363-04:00",
     "regulatory_basis": "PCMLTFA - identity verification required before account opening",
     "method": "GOVERNMENT_PHOTO_ID",
     "external_verification_performed": false
@@ -83,7 +83,7 @@
     },
     "finding": "NO_SCREENING_INDICATORS",
     "reasoning": "No sanctions match found for Gordon Fraser. No PEP indicators.",
-    "timestamp": "2026-08-21T05:43:07.457308-04:00",
+    "timestamp": "2026-08-21T06:48:18.569142-04:00",
     "regulatory_basis": "PCMLTFA - screening completed with no indicators found",
     "lists_checked": [
       "sanctions",
@@ -106,7 +106,7 @@
     },
     "finding": "WEALTH_SUPPORTED",
     "reasoning": "Wealth document present. Declared source of wealth: Salary and dividends from a private manufacturing company. Bank statements present. Declared source of funds: Transfer from personal account funded by company dividends. All required wealth and funds documents are present. No crypto exposure and no cross-border activity declared.",
-    "timestamp": "2026-08-21T05:43:07.458542-04:00",
+    "timestamp": "2026-08-21T06:48:18.569910-04:00",
     "regulatory_basis": "PCMLTFA - source of wealth and funds verification completed",
     "document_contents_reviewed": false
   },
@@ -122,7 +122,7 @@
     },
     "finding": "BUSINESS_OWNERSHIP_INCOME_MISSING",
     "reasoning": "Business ownership confirmed for Gordon Fraser. Company: Fraser Precision Manufacturing Inc.. Role: Owner and Managing Director. Registry ownership: 100%. Business documents are on file. Income evidence is not present. The registry confirms ownership but there is no documentation showing how the client received money from the business (salary, dividends, or distributions).",
-    "timestamp": "2026-08-21T05:43:07.460300-04:00",
+    "timestamp": "2026-08-21T06:48:18.570647-04:00",
     "regulatory_basis": "Ownership confirmed but no evidence of how the client received money from the business",
     "external_registry_checked": false
   },
@@ -136,7 +136,7 @@
     },
     "finding": "MEDIUM",
     "reasoning": "One compliance issue identified: BUSINESS_OWNERSHIP_INCOME_MISSING.",
-    "timestamp": "2026-08-21T05:43:07.460983-04:00",
+    "timestamp": "2026-08-21T06:48:18.571056-04:00",
     "regulatory_basis": "Medium risk - enhanced monitoring recommended",
     "verified": [
       "Identity verification complete",
@@ -166,8 +166,8 @@
       ]
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**1. OPENING LINE**  \nGordon Fraser \u2013 Medium risk.\n\n**2. WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions or politically exposed person (PEP) matches were found.  \n- Source of wealth and source of funds are supported by the documents provided.  \n- Business ownership has been confirmed through the corporate registry.\n\n**3. WHAT NEEDS REVIEW**  \n- Although the registry shows Mr. Fraser owns the business, there is no documentation showing how money from that business is actually received by him (e.g., salary, dividends, profit distributions, or other payments). This gap matters because we must confirm that the funds used for the account originate from legitimate, traceable income.\n\n**4. WHERE TO FOCUS**  \n- Request detailed proof of income from the owned business, such as recent dividend statements, payroll records, shareholder distribution notices, tax filings, or bank statements that link business earnings to Mr. Fraser\u2019s personal accounts.  \n- Verify that the amounts and timing of these payments align with the source\u2011of\u2011funds documentation already on file.  \n- If the client cannot provide sufficient evidence, note the deficiency and consider additional enhanced due\u2011diligence steps.",
-    "timestamp": "2026-08-21T05:43:08.781072-04:00",
+    "reasoning": "**OPENING LINE**  \nGordon Fraser is a medium\u2011risk client.\n\n**WHAT HAS BEEN VERIFIED**  \n- His identity has been successfully verified.  \n- No sanctions or politically exposed person (PEP) alerts were found.  \n- He has provided documentation that supports the source of his wealth and the source of his funds.  \n- His ownership of the business has been confirmed through the official registry.\n\n**WHAT NEEDS REVIEW**  \n- Although the business ownership is confirmed, there is no evidence showing how Gordon receives income or cash flow from that business. This gap matters because we must understand the link between the business and the money he is using for banking activities to ensure the funds are legitimate and not derived from undisclosed or illicit sources.\n\n**WHERE TO FOCUS**  \n- Request detailed financial statements, profit\u2011and\u2011loss reports, or dividend distribution records from the business that demonstrate how money is paid to Gordon.  \n- Ask for bank statements or transaction records that trace payments from the business to his personal accounts.  \n- Obtain any shareholder or partnership agreements that outline profit\u2011sharing or compensation arrangements.  \n- Review the provided documents to confirm that the income streams are consistent with the declared source of wealth and comply with AML/CTF requirements.",
+    "timestamp": "2026-08-21T06:48:19.609472-04:00",
     "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]

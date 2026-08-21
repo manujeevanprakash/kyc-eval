@@ -8,7 +8,7 @@
     },
     "finding": "PLAN_CREATED",
     "reasoning": "Required checks: identity, screening, wealth. Business review not required based on whether the case declares business wealth.",
-    "timestamp": "2026-08-21T05:43:04.870392-04:00",
+    "timestamp": "2026-08-21T06:48:16.302318-04:00",
     "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
@@ -58,7 +58,7 @@
     },
     "finding": "IDENTITY_VERIFIED",
     "reasoning": "Identity evidence is present for Michael Anderson. Government ID uploaded. Nationality and residency declared.",
-    "timestamp": "2026-08-21T05:43:04.871206-04:00",
+    "timestamp": "2026-08-21T06:48:16.303046-04:00",
     "regulatory_basis": "PCMLTFA - identity verification required before account opening",
     "method": "GOVERNMENT_PHOTO_ID",
     "external_verification_performed": false
@@ -72,7 +72,7 @@
     },
     "finding": "SANCTIONS_POTENTIAL_MATCH",
     "reasoning": "Michael Anderson matches the name of a listed person, but the date of birth on file (1972-08-30) does not match the list entry (1959-01-19, British). This is a candidate match requiring adjudication, not a confirmed match. Do not contact the client about this match.",
-    "timestamp": "2026-08-21T05:43:04.872046-04:00",
+    "timestamp": "2026-08-21T06:48:16.304049-04:00",
     "regulatory_basis": "PCMLTFA - potential match must be adjudicated before onboarding; do not contact the client",
     "lists_checked": [
       "sanctions",
@@ -95,7 +95,7 @@
     },
     "finding": "WEALTH_SUPPORTED",
     "reasoning": "Wealth document present. Declared source of wealth: Partnership income from an architecture practice. Bank statements present. Declared source of funds: Transfer from personal savings account. All required wealth and funds documents are present. No crypto exposure and no cross-border activity declared.",
-    "timestamp": "2026-08-21T05:43:04.872846-04:00",
+    "timestamp": "2026-08-21T06:48:16.305050-04:00",
     "regulatory_basis": "PCMLTFA - source of wealth and funds verification completed",
     "document_contents_reviewed": false
   },
@@ -108,7 +108,7 @@
     },
     "finding": "HIGH",
     "reasoning": "Potential sanctions match identified. Adjudication required before onboarding.",
-    "timestamp": "2026-08-21T05:43:04.873703-04:00",
+    "timestamp": "2026-08-21T06:48:16.306068-04:00",
     "regulatory_basis": "High risk - enhanced due diligence required",
     "verified": [
       "Identity verification complete",
@@ -136,8 +136,8 @@
       ]
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**OPENING LINE**  \nMichael Anderson is flagged with a HIGH risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- Politically Exposed Person (PEP) screening is complete with no concerns.  \n- Documentation supporting the source of wealth and source of funds has been provided and accepted.\n\n**WHAT NEEDS REVIEW**  \n- A potential sanctions match was found: the client\u2019s name matches a name on a sanctions list, but the other identifying details (such as date of birth, address, or passport number) do not line up. This discrepancy could indicate a false positive or a genuine risk, and it must be resolved before the client can be onboarded.\n\n**WHERE TO FOCUS**  \n- Conduct a detailed adjudication of the sanctions hit: compare all available identifiers (full legal name, date of birth, nationality, passport/ID numbers, and residential address) against the sanctions list entry.  \n- Request additional documentation from the client if needed (e.g., a certified copy of the passport, utility bills, or a declaration confirming they are not the listed individual).  \n- If the match remains unresolved after gathering extra evidence, escalate the case to the senior sanctions compliance team for a final decision.",
-    "timestamp": "2026-08-21T05:43:05.994725-04:00",
+    "reasoning": "**OPENING LINE**  \nMichael Anderson is flagged with a HIGH risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- His identity has been successfully verified.  \n- A politically exposed person (PEP) screening has been completed.  \n- Documentation supporting the source of his wealth and the source of his funds has been provided and accepted.\n\n**WHAT NEEDS REVIEW**  \n- A potential sanctions match has been detected. The name on the sanctions list matches Michael\u2019s, but the accompanying identifiers (such as date of birth, address, or passport number) do not line up exactly. This discrepancy requires a deeper look to determine whether the match is a false positive or a genuine concern.\n\n**WHERE TO FOCUS**  \n- Conduct a detailed sanctions adjudication: compare all available personal identifiers (date of birth, passport numbers, addresses, aliases) against the sanctions list entry.  \n- Reach out to the client for any additional documentation that can clarify the differing identifiers (e.g., a full passport scan, utility bills, or a government\u2011issued ID).  \n- If needed, consult the bank\u2019s sanctions compliance team or external sanctions screening specialist to confirm whether the match should be cleared or escalated.  \n- Document the findings and the decision\u2011making process in the client\u2019s file before any further onboarding steps are taken.",
+    "timestamp": "2026-08-21T06:48:17.420692-04:00",
     "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]
