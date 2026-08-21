@@ -1,105 +1,137 @@
+"""
+Config — API keys, model selection, and regulatory basis per finding.
+
+Every agent attaches a regulatory_basis to its record. That basis is
+the obligation the finding creates, not the obligation to keep a
+record of it.
+
+The four deterministic agents apply rules, so they cite the requirement
+they are executing. The Case Summary Agent is the only component that
+uses a model, so it is the only one that cites the model governance
+obligation.
+"""
+
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# API Keys
+# API keys
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
-LANGCHAIN_PROJECT = os.getenv("LANGCHAIN_PROJECT")
 
 # Model
-MODEL = os.getenv("MODEL", "groq/openai/gpt-oss-120b")
+MODEL = "groq/openai/gpt-oss-120b"
 
-# Paths
+# Trace output
 TRACES_DIR = "traces"
 
+# Explainability — used by the Case Summary Agent
+E23_EXPLAINABILITY = (
+    "OSFI E-23 - AI-assisted decisions must be explainable and documented"
+)
 
-# Regulatory basis per finding.
-#
-# The citation names the obligation the decision was made under, not the
-# obligation to keep a record of it. An examiner asking why a client was
-# treated a certain way should read the rule that required it.
-#
-# Note what is absent. OSFI E-23 governs models. The four agents below are
-# deterministic and apply rules rather than statistical methods, so they
-# cite the KYC and AML obligation they are executing. Only the Case Summary
-# agent uses an LLM, and it is the only component that cites E-23.
+# The obligation each finding creates. Looked up by every agent after
+# it decides what to return. If a finding is missing from this dict
+# the agent will raise a KeyError, which is better than silently
+# recording nothing.
 REGULATORY_BASIS = {
     # Identity
-    "IDENTITY_VERIFIED":
-        "PCMLTFA - identity verification required before account opening",
-    "IDENTITY_INCOMPLETE":
-        "PCMLTFA - identity verification required before account opening",
+    "IDENTITY_VERIFIED": (
+        "PCMLTFA - identity verification required before account opening"
+    ),
+    "IDENTITY_INCOMPLETE": (
+        "PCMLTFA - identity verification required before account opening; "
+        "cannot proceed with incomplete information"
+    ),
 
-    # Screening - sanctions
-    "SANCTIONS_MATCH_CONFIRMED":
-        "PCMLTFA s.9.6 - dealings prohibited with a listed person; "
-        "property must be reported via LPEPR",
-    "SANCTIONS_POTENTIAL_MATCH":
-        "PCMLTFA s.9.6 - candidate match requires adjudication before "
-        "onboarding; disclosure to the client is prohibited",
+    # Screening — sanctions
+    "SANCTIONS_MATCH_CONFIRMED": (
+        "PCMLTFA - dealing with a listed person is prohibited; "
+        "hard stop, no discretion"
+    ),
+    "SANCTIONS_POTENTIAL_MATCH": (
+        "PCMLTFA - potential match must be adjudicated before onboarding; "
+        "do not contact the client"
+    ),
 
-    # Screening - PEP and cross-border
-    "PEP_CONFIRMED":
-        "FINTRAC - PEP determination required at onboarding; enhanced "
-        "due diligence mandatory once confirmed",
-    "PEP_DETECTED_NOT_DECLARED":
-        "FINTRAC - PEP determination required at onboarding; enhanced "
-        "due diligence mandatory once confirmed",
-    "PEP_DECLARED_NOT_DETECTED":
-        "FINTRAC - PEP determination required at onboarding; enhanced "
-        "due diligence mandatory once confirmed",
-    "CROSS_BORDER_FLAGGED":
-        "PCMLTFA - electronic funds transfer reporting required for "
-        "cross-border transfers of CAD 10,000 or more",
-    "NO_SCREENING_INDICATORS":
-        "PCMLTFA s.9.6 - sanctions screening performed, no match returned",
+    # Screening — PEP
+    "PEP_CONFIRMED": (
+        "FINTRAC - PEP determination required at onboarding; "
+        "enhanced due diligence mandatory once confirmed"
+    ),
+    "PEP_DETECTED_NOT_DECLARED": (
+        "FINTRAC - PEP detected but not declared by the client; "
+        "requires compliance officer review"
+    ),
+    "PEP_DECLARED_NOT_DETECTED": (
+        "FINTRAC - client declared PEP status but no registry match found; "
+        "compliance officer should verify the declaration"
+    ),
+    "NO_SCREENING_INDICATORS": (
+        "PCMLTFA - screening completed with no indicators found"
+    ),
 
     # Wealth and funds
-    "WEALTH_SUPPORTED":
-        "PCMLTFA - source of wealth and source of funds verification "
-        "required for high-net-worth clients",
-    "WEALTH_EVIDENCE_INCOMPLETE":
-        "PCMLTFA - source of wealth and source of funds verification "
-        "required for high-net-worth clients",
-    "WEALTH_SUPPORTED_CRYPTO_PRESENT":
-        "PCMLTFA virtual currency amendments - source of virtual currency "
-        "must be verified and transactions screened",
-    "CRYPTO_SOURCE_NOT_ESTABLISHED":
-        "PCMLTFA virtual currency amendments - source of virtual currency "
-        "must be verified and transactions screened",
+    "WEALTH_SUPPORTED": (
+        "PCMLTFA - source of wealth and funds verification completed"
+    ),
+    "WEALTH_SUPPORTED_CRYPTO_PRESENT": (
+        "PCMLTFA - wealth supported; crypto funds declared with exchange "
+        "records present but crypto origin requires compliance officer review"
+    ),
+    "WEALTH_SUPPORTED_CROSS_BORDER": (
+        "Cross-border transfers increase exposure and require "
+        "compliance officer review"
+    ),
+    "WEALTH_EVIDENCE_INCOMPLETE": (
+        "PCMLTFA - source of wealth and funds verification cannot be "
+        "completed; required documents missing"
+    ),
+    "CRYPTO_SOURCE_NOT_ESTABLISHED": (
+        "PCMLTFA - crypto funds declared but exchange records not "
+        "provided; source of crypto funds cannot be established"
+    ),
 
-    # Business structure
-    "BUSINESS_SALE_SUPPORTED":
-        "FINTRAC - beneficial ownership confirmation; 25 percent control "
-        "threshold applies to corporate structures",
-    "BUSINESS_DOCUMENTS_MISSING":
-        "FINTRAC - beneficial ownership confirmation; 25 percent control "
-        "threshold applies to corporate structures",
-    "REGISTRY_MATCH_NOT_FOUND":
-        "FINTRAC - beneficial ownership confirmation; 25 percent control "
-        "threshold applies to corporate structures",
-    "SALE_AMOUNT_INCONSISTENT":
-        "FINTRAC - beneficial ownership confirmation; 25 percent control "
-        "threshold applies to corporate structures",
+    # Business — sale
+    "BUSINESS_SALE_SUPPORTED": (
+        "Business sale confirmed by the corporate registry"
+    ),
+    "BUSINESS_SALE_UNCONFIRMED": (
+        "Corporate registry does not confirm the declared sale"
+    ),
+    "BUSINESS_SALE_AMOUNT_INCONSISTENT": (
+        "Declared sale amount does not match the registry record"
+    ),
 
-    # Risk engine outcomes
-    "LOW":
-        "FINTRAC - risk-based approach; a client risk rating is required "
-        "for every business relationship",
-    "MEDIUM":
-        "FINTRAC - risk-based approach; a client risk rating is required "
-        "for every business relationship",
-    "HIGH":
-        "FINTRAC - enhanced due diligence required for high-risk clients",
-    "CANNOT_CLASSIFY":
-        "FINTRAC - a client risk rating cannot be assigned until the "
-        "required information is obtained",
+    # Business — ownership
+    "BUSINESS_OWNERSHIP_CONFIRMED": (
+        "Business ownership confirmed by the corporate registry"
+    ),
+    "BUSINESS_OWNERSHIP_INCOME_MISSING": (
+        "Ownership confirmed but no evidence of how the client "
+        "received money from the business"
+    ),
+
+    # Business — errors
+    "BUSINESS_NOT_IN_REGISTRY": (
+        "Business claim cannot be confirmed without a registry entry"
+    ),
+    "BUSINESS_REGISTRY_MISMATCH": (
+        "Declared company does not match the corporate registry"
+    ),
+    "BUSINESS_STATUS_UNKNOWN": (
+        "Business wealth declared with an unrecognised status"
+    ),
+
+    # Risk engine
+    "LOW": "Low risk - standard onboarding procedures apply",
+    "MEDIUM": "Medium risk - enhanced monitoring recommended",
+    "HIGH": "High risk - enhanced due diligence required",
+    "CANNOT_CLASSIFY": (
+        "Insufficient information to classify risk; "
+        "missing documents or declarations must be obtained"
+    ),
+
+    # Case summary
+    "SUMMARY_GENERATED": E23_EXPLAINABILITY,
 }
-
-# The only component in this workflow that uses a model.
-E23_EXPLAINABILITY = (
-    "OSFI E-23 - AI-assisted output must be explainable, documented "
-    "and independently reviewable"
-)

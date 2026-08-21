@@ -4,25 +4,57 @@ from config import REGULATORY_BASIS
 
 
 def _toronto_now_iso():
+    # Toronto time for every timestamp, since this prototype is built
+    # around a Canadian bank.
     return datetime.now(ZoneInfo("America/Toronto")).isoformat()
 
 
-# Findings that mean the case package is missing information the agents
-# need. These defer the classification rather than produce one.
-#
-# Every value is the plain-English gap a compliance officer has to close,
-# which is what reaches them in the summary. A percentage would not be.
-#
-# Note what is deliberately absent. REGISTRY_MATCH_NOT_FOUND and
-# SALE_AMOUNT_INCONSISTENT are contradictions, not gaps. The documents
-# arrived and they disagree with each other. A gap gets closed with an
-# email to the client. A contradiction gets investigated.
-INCOMPLETE_FINDINGS = {
-    "IDENTITY_INCOMPLETE": "Identity information is incomplete",
-    "WEALTH_EVIDENCE_INCOMPLETE": "Required wealth documents are missing",
-    "CRYPTO_SOURCE_NOT_ESTABLISHED": "Crypto exchange records are missing",
-    "BUSINESS_DOCUMENTS_MISSING": "Business sale documents are missing",
-}
+def _has_value(value):
+    # A field counts as present only if the client actually put
+    # something in it.
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, bool):
+        return True
+    return bool(value)
+
+
+# The minimum set of documents and fields needed before the engine
+# will even attempt a classification. Below this threshold the
+# engine returns CANNOT_CLASSIFY rather than guessing.
+REQUIRED_DOCUMENTS = ["government_id", "bank_statements", "wealth_document"]
+REQUIRED_CLIENT_FIELDS = ["full_name", "nationality", "residency"]
+
+COMPLETENESS_THRESHOLD = 0.70
+
+
+def compute_completeness(case: dict) -> float:
+    """
+    Scores how complete a case is (0 to 1), based on which documents
+    and client fields are present. Documents are weighted 70%, client
+    fields 30%.
+
+    This is a gate, not a score. If the number is below the threshold,
+    the engine refuses to classify rather than working from a partial
+    picture.
+    """
+
+    documents = case.get("documents", {})
+    client = case.get("client", {})
+
+    documents_present = sum(
+        1 for field in REQUIRED_DOCUMENTS if documents.get(field) is True
+    )
+    documents_score = documents_present / len(REQUIRED_DOCUMENTS)
+
+    client_fields_present = sum(
+        1 for field in REQUIRED_CLIENT_FIELDS if _has_value(client.get(field))
+    )
+    client_score = client_fields_present / len(REQUIRED_CLIENT_FIELDS)
+
+    return round(0.70 * documents_score + 0.30 * client_score, 2)
 
 
 def run_risk_engine(
@@ -33,16 +65,17 @@ def run_risk_engine(
     business_result: dict | None = None,
 ) -> dict:
     """
-    Risk Engine — deterministic rules.
-    Aggregates all agent findings and produces a risk signal.
-    No LLM involved — rule-based decision only.
+    Risk Engine — deterministic rules, no model involved.
 
-    Risk Signal: LOW, MEDIUM, HIGH, or CANNOT_CLASSIFY.
-    This is the ground truth label the eval framework checks against
-    expected_risk_signal in each test case.
+    It takes the findings from every agent that ran and applies the
+    bank's risk rules. The output is a risk signal — LOW, MEDIUM,
+    HIGH, or CANNOT_CLASSIFY — along with the verified list and the
+    needs-review list that the Case Summary Agent will translate into
+    plain English.
 
-    The `case` argument is retained for signature compatibility with
-    workflow.py. The engine reads agent findings, not raw case fields.
+    The case parameter is read only for the completeness gate. No
+    agent finding passes through case — everything arrives via the
+    agent result dicts.
     """
 
     identity_finding = identity_result.get("finding")
@@ -50,7 +83,8 @@ def run_risk_engine(
     wealth_finding = wealth_result.get("finding")
     business_finding = business_result.get("finding") if business_result else None
 
-    # Collect all issues — each is a tuple of (agent, finding)
+    # Every issue is a tuple of (agent, finding). The list drives
+    # the decision chain below, and its length decides MEDIUM.
     issues = []
     needs_review = []
     verified = []
@@ -63,29 +97,38 @@ def run_risk_engine(
         needs_review.append("Identity verification incomplete")
 
     # --- Screening ---
+    # Sanctions confirmed is a hard stop. Everything else is an issue
+    # of varying severity, but none of them stop the case.
     if screening_finding == "SANCTIONS_MATCH_CONFIRMED":
         issues.append(("screening", "HARD_STOP"))
-        needs_review.append("Confirmed sanctions match. Case cannot proceed.")
+        needs_review.append(
+            "Confirmed sanctions match. Case cannot proceed"
+        )
     elif screening_finding == "SANCTIONS_POTENTIAL_MATCH":
         issues.append(("screening", "SANCTIONS_POTENTIAL_MATCH"))
         needs_review.append(
             "Potential sanctions match. Name matched a listed person but "
-            "identifiers differ. Adjudication required before onboarding."
+            "identifiers differ. Adjudication required before onboarding"
         )
+        verified.append("PEP screening complete")
     elif screening_finding == "PEP_CONFIRMED":
         issues.append(("screening", "PEP_CONFIRMED"))
-        needs_review.append("PEP status confirmed. Enhanced due diligence required.")
+        needs_review.append(
+            "PEP status confirmed. Enhanced due diligence required"
+        )
         verified.append("No sanctions match found")
     elif screening_finding == "PEP_DETECTED_NOT_DECLARED":
         issues.append(("screening", "PEP_DETECTED_NOT_DECLARED"))
-        needs_review.append("PEP detected but not declared by the client")
+        needs_review.append(
+            "PEP detected but not declared by the client"
+        )
+        verified.append("No sanctions match found")
     elif screening_finding == "PEP_DECLARED_NOT_DETECTED":
         issues.append(("screening", "PEP_DECLARED_NOT_DETECTED"))
-        needs_review.append("PEP declared by the client but not found in the registry")
-    elif screening_finding == "CROSS_BORDER_FLAGGED":
-        issues.append(("screening", "CROSS_BORDER_FLAGGED"))
-        needs_review.append("Cross-border transactions expected. Requires review.")
-        verified.append("No sanctions or PEP indicators found")
+        needs_review.append(
+            "PEP declared by the client but not found in the registry"
+        )
+        verified.append("No sanctions match found")
     else:
         verified.append("No sanctions or PEP indicators found")
 
@@ -95,104 +138,151 @@ def run_risk_engine(
     elif wealth_finding == "WEALTH_SUPPORTED_CRYPTO_PRESENT":
         issues.append(("wealth", "CRYPTO_ORIGIN_NOT_ESTABLISHED"))
         needs_review.append(
-            "Crypto funds declared. Exchange records present but the "
-            "origin of the crypto funds is not established."
+            "Crypto funds declared. Exchange records present "
+            "but origin of crypto funds not established"
+        )
+        verified.append("Wealth documents and bank statements present")
+    elif wealth_finding == "WEALTH_SUPPORTED_CROSS_BORDER":
+        issues.append(("wealth", "CROSS_BORDER"))
+        needs_review.append(
+            "Cross-border transactions expected. Requires review"
         )
         verified.append("Wealth documents and bank statements present")
     elif wealth_finding == "CRYPTO_SOURCE_NOT_ESTABLISHED":
         issues.append(("wealth", "CRYPTO_SOURCE_NOT_ESTABLISHED"))
         needs_review.append(
-            "Crypto funds declared but exchange records are missing. "
-            "Source of the crypto funds cannot be established."
+            "Crypto funds declared but exchange records missing. "
+            "Source of crypto funds cannot be established"
         )
     elif wealth_finding == "WEALTH_EVIDENCE_INCOMPLETE":
         issues.append(("wealth", "WEALTH_EVIDENCE_INCOMPLETE"))
         needs_review.append("Required wealth documents are missing")
 
     # --- Business ---
+    # Two paths. A confirmed sale or confirmed ownership goes to
+    # verified. Everything else is an issue. The distinction between
+    # a gap (missing evidence) and a contradiction (amounts don't
+    # match) matters — a gap gets closed with an email, a
+    # contradiction gets investigated.
     if business_result:
         if business_finding == "BUSINESS_SALE_SUPPORTED":
-            verified.append("Business sale context supported by documents and registry")
+            verified.append(
+                "Business sale context supported by documents and registry"
+            )
+        elif business_finding == "BUSINESS_OWNERSHIP_CONFIRMED":
+            verified.append(
+                "Business ownership confirmed by registry with "
+                "income evidence on file"
+            )
+        elif business_finding == "BUSINESS_OWNERSHIP_INCOME_MISSING":
+            issues.append(("business", "BUSINESS_OWNERSHIP_INCOME_MISSING"))
+            needs_review.append(
+                "Business ownership confirmed by registry but no evidence "
+                "of how the client received money from the business"
+            )
+            verified.append("Business ownership confirmed by registry")
+        elif business_finding == "BUSINESS_SALE_AMOUNT_INCONSISTENT":
+            issues.append(("business", "BUSINESS_SALE_AMOUNT_INCONSISTENT"))
+            needs_review.append(
+                "Business sale confirmed but declared amount does not "
+                "match the registry record. Requires investigation"
+            )
+        elif business_finding == "BUSINESS_SALE_UNCONFIRMED":
+            issues.append(("business", "BUSINESS_SALE_UNCONFIRMED"))
+            needs_review.append(
+                "Client declared a business sale but the corporate "
+                "registry does not confirm it"
+            )
+        elif business_finding == "BUSINESS_NOT_IN_REGISTRY":
+            issues.append(("business", "BUSINESS_NOT_IN_REGISTRY"))
+            needs_review.append(
+                "Client declared a business but no corporate registry "
+                "entry was found"
+            )
+        elif business_finding == "BUSINESS_REGISTRY_MISMATCH":
+            issues.append(("business", "BUSINESS_REGISTRY_MISMATCH"))
+            needs_review.append(
+                "Declared company name does not match the corporate "
+                "registry entry for this client"
+            )
         else:
             issues.append(("business", business_finding))
-            needs_review.append("Business sale context could not be confirmed")
+            needs_review.append(
+                f"Business review returned an unexpected finding: "
+                f"{business_finding}"
+            )
 
-    # --- Decision ---
-    # Order carries legal weight. A confirmed sanctions match stops the case
-    # regardless of how complete the package is, so it is evaluated first.
-    # Missing documents never delay a hard stop.
-    #
-    # Each branch sets basis_key alongside the signal. The regulation has to
-    # come from the reason the decision was made, not from the tier it landed
-    # in. A PEP case and a sanctions hard stop both return HIGH and they are
-    # governed by different rules.
+    # --- Completeness gate ---
+    # If the case itself is too thin, the engine refuses to classify.
+    # This has to come before the decision chain, because a case with
+    # missing documents and a PEP finding should not be classified
+    # HIGH — it should be deferred until the documents arrive.
+    completeness = compute_completeness(case)
 
-    if any(code == "HARD_STOP" for _, code in issues):
-        risk_signal = "HIGH"
-        basis_key = "SANCTIONS_MATCH_CONFIRMED"
-        risk_reason = (
-            "Sanctions match confirmed. "
-            "Hard stop under PCMLTFA s.9.6. "
-            "Case cannot proceed."
-        )
-
-    # A candidate match is adjudicated on identifiers alone. It does not
-    # wait on wealth documents, so it resolves before the deferral check.
-    elif any(code == "SANCTIONS_POTENTIAL_MATCH" for _, code in issues):
-        risk_signal = "HIGH"
-        basis_key = "SANCTIONS_POTENTIAL_MATCH"
-        risk_reason = (
-            "Client name matches a listed person but the identifying "
-            "details differ. Adjudication required before onboarding "
-            "continues. Do not contact the client about the match."
-        )
-
-    # Then check whether the agents had enough to work with at all.
-    elif any(code in INCOMPLETE_FINDINGS for _, code in issues):
-        gaps = [
-            INCOMPLETE_FINDINGS[code]
-            for _, code in issues
-            if code in INCOMPLETE_FINDINGS
-        ]
+    if completeness < COMPLETENESS_THRESHOLD:
         risk_signal = "CANNOT_CLASSIFY"
-        basis_key = "CANNOT_CLASSIFY"
         risk_reason = (
-            "This case cannot be classified until the following are "
-            "provided: " + "; ".join(gaps) + "."
+            f"Case completeness is {completeness:.0%}, below the "
+            f"{COMPLETENESS_THRESHOLD:.0%} threshold. "
+            "Additional documents or client information must be "
+            "provided before this case can be classified."
+        )
+
+    # --- Decision chain ---
+    # Most severe first. A sanctions hard stop wins over everything.
+    # PEP plus crypto is a specific combination that gets its own
+    # reason. After that, issue count decides.
+    elif any(i[1] == "HARD_STOP" for i in issues):
+        risk_signal = "HIGH"
+        risk_reason = (
+            "Confirmed sanctions match. "
+            "Hard stop. Case cannot proceed."
         )
 
     elif (
-        any(code == "PEP_CONFIRMED" for _, code in issues)
-        and any(code == "CRYPTO_ORIGIN_NOT_ESTABLISHED" for _, code in issues)
+        any(i[1] == "PEP_CONFIRMED" for i in issues)
+        and any(i[1] == "CRYPTO_ORIGIN_NOT_ESTABLISHED" for i in issues)
     ):
         risk_signal = "HIGH"
-        basis_key = "PEP_CONFIRMED"
         risk_reason = (
             "PEP status confirmed and crypto origin not established. "
-            "Enhanced due diligence required under FINTRAC guidelines."
+            "Enhanced due diligence required."
         )
 
-    elif any(agent == "screening" and "PEP" in code for agent, code in issues):
+    elif any(i[0] == "screening" and "PEP" in i[1] for i in issues):
         risk_signal = "HIGH"
-        basis_key = "PEP_CONFIRMED"
-        risk_reason = "PEP status identified. Enhanced due diligence required."
+        risk_reason = (
+            "PEP status identified. Enhanced due diligence required."
+        )
+
+    elif any(i[1] == "SANCTIONS_POTENTIAL_MATCH" for i in issues):
+        risk_signal = "HIGH"
+        risk_reason = (
+            "Potential sanctions match identified. "
+            "Adjudication required before onboarding."
+        )
 
     elif len(issues) >= 2:
         risk_signal = "MEDIUM"
-        basis_key = "MEDIUM"
-        risk_reason = f"{len(issues)} risk issues identified. Requires review."
+        risk_reason = (
+            f"{len(issues)} compliance issues identified. "
+            f"Requires review."
+        )
 
     elif len(issues) == 1:
         risk_signal = "MEDIUM"
-        basis_key = "MEDIUM"
-        risk_reason = f"One risk issue identified: {issues[0][1]}."
+        risk_reason = (
+            f"One compliance issue identified: {issues[0][1]}."
+        )
 
     else:
         risk_signal = "LOW"
-        basis_key = "LOW"
-        risk_reason = "All checks passed. No issues identified."
+        risk_reason = (
+            "All compliance checks passed. No issues identified."
+        )
 
-    # Findings summary passed to the Case Summary agent
+    # What goes to the Case Summary Agent. It reads finding, verified,
+    # needs_review, and reasoning. Nothing else.
     findings_by_agent = {
         "identity": identity_finding,
         "screening": screening_finding,
@@ -207,7 +297,9 @@ def run_risk_engine(
         "finding": risk_signal,
         "reasoning": risk_reason,
         "timestamp": _toronto_now_iso(),
-        "regulatory_basis": REGULATORY_BASIS[basis_key],
+        "regulatory_basis": REGULATORY_BASIS[risk_signal],
+        # These two fields feed directly into the Case Summary Agent.
         "verified": verified,
         "needs_review": needs_review,
+        "completeness": completeness,
     }

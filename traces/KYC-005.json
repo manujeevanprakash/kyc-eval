@@ -3,12 +3,13 @@
     "agent": "orchestrator",
     "input": {
       "case_id": "KYC-005",
-      "source_of_wealth_description": "Partnership income from an architecture practice"
+      "business_wealth_declared": false,
+      "crypto_declared": false
     },
     "finding": "PLAN_CREATED",
-    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on the declared source of wealth.",
-    "timestamp": "2026-08-16T01:26:12.440275-04:00",
-    "regulatory_basis": "OSFI E-23 - agent selection and input scope must be documented and independently reviewable",
+    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on whether the case declares business wealth.",
+    "timestamp": "2026-08-20T09:03:02.601624-04:00",
+    "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
         "identity",
@@ -22,24 +23,27 @@
             "client.nationality",
             "client.residency",
             "documents.government_id"
-          ]
+          ],
+          "regulatory_requirement": "Client identity must be verified before an account is opened"
         },
         "screening": {
           "use": [
             "client.full_name",
-            "client.nationality",
-            "client.pep_declared",
-            "client.cross_border_transactions"
-          ]
+            "client.date_of_birth",
+            "client.pep_declared"
+          ],
+          "regulatory_requirement": "Clients must be screened against sanctions lists and politically exposed person registries"
         },
         "wealth": {
           "use": [
-            "source_of_wealth",
-            "source_of_funds",
+            "source_of_wealth_personal",
+            "source_of_funds_personal",
+            "client.cross_border_transactions",
+            "client.expected_destination_countries",
             "documents.wealth_document",
-            "documents.bank_statements",
-            "documents.crypto_records"
-          ]
+            "documents.bank_statements"
+          ],
+          "regulatory_requirement": "Source of wealth and source of funds must be verified for high-net-worth clients"
         }
       }
     }
@@ -54,21 +58,27 @@
     },
     "finding": "IDENTITY_VERIFIED",
     "reasoning": "Identity evidence is present for Michael Anderson. Government ID uploaded. Nationality and residency declared.",
-    "timestamp": "2026-08-16T01:26:12.441628-04:00",
-    "regulatory_basis": "PCMLTFA - identity verification required before account opening"
+    "timestamp": "2026-08-20T09:03:02.604049-04:00",
+    "regulatory_basis": "PCMLTFA - identity verification required before account opening",
+    "method": "GOVERNMENT_PHOTO_ID",
+    "external_verification_performed": false
   },
   {
     "agent": "screening",
     "input": {
       "full_name": "Michael Anderson",
       "date_of_birth": "1972-08-30",
-      "pep_declared": false,
-      "cross_border_transactions": false
+      "pep_declared": false
     },
     "finding": "SANCTIONS_POTENTIAL_MATCH",
     "reasoning": "Michael Anderson matches the name of a listed person, but the date of birth on file (1972-08-30) does not match the list entry (1959-01-19, British). This is a candidate match requiring adjudication, not a confirmed match. Do not contact the client about this match.",
-    "timestamp": "2026-08-16T01:26:12.442754-04:00",
-    "regulatory_basis": "PCMLTFA s.9.6 - candidate match requires adjudication before onboarding; disclosure to the client is prohibited"
+    "timestamp": "2026-08-20T09:03:02.605005-04:00",
+    "regulatory_basis": "PCMLTFA - potential match must be adjudicated before onboarding; do not contact the client",
+    "lists_checked": [
+      "sanctions",
+      "politically_exposed_persons"
+    ],
+    "external_screening_performed": false
   },
   {
     "agent": "wealth",
@@ -77,14 +87,17 @@
       "source_of_funds": "Transfer from personal savings account",
       "declared_amount": 600000,
       "crypto_involved": false,
+      "cross_border_transactions": false,
+      "expected_destination_countries": [],
       "wealth_document_present": true,
       "bank_statements_present": true,
       "crypto_records_present": false
     },
     "finding": "WEALTH_SUPPORTED",
-    "reasoning": "Wealth document present. Declared source of funds: Transfer from personal savings account. Bank statements present. All required wealth and funds documents are present. No crypto exposure.",
-    "timestamp": "2026-08-16T01:26:12.447977-04:00",
-    "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
+    "reasoning": "Wealth document present. Declared source of wealth: Partnership income from an architecture practice. Bank statements present. Declared source of funds: Transfer from personal savings account. All required wealth and funds documents are present. No crypto exposure and no cross-border activity declared.",
+    "timestamp": "2026-08-20T09:03:02.606253-04:00",
+    "regulatory_basis": "PCMLTFA - source of wealth and funds verification completed",
+    "document_contents_reviewed": false
   },
   {
     "agent": "risk_engine",
@@ -94,16 +107,18 @@
       "wealth": "WEALTH_SUPPORTED"
     },
     "finding": "HIGH",
-    "reasoning": "Client name matches a listed person but the identifying details differ. Adjudication required before onboarding continues. Do not contact the client about the match.",
-    "timestamp": "2026-08-16T01:26:12.448945-04:00",
-    "regulatory_basis": "PCMLTFA s.9.6 - candidate match requires adjudication before onboarding; disclosure to the client is prohibited",
+    "reasoning": "Potential sanctions match identified. Adjudication required before onboarding.",
+    "timestamp": "2026-08-20T09:03:02.610857-04:00",
+    "regulatory_basis": "High risk - enhanced due diligence required",
     "verified": [
       "Identity verification complete",
+      "PEP screening complete",
       "Source of wealth and funds supported by documents"
     ],
     "needs_review": [
-      "Potential sanctions match. Name matched a listed person but identifiers differ. Adjudication required before onboarding."
-    ]
+      "Potential sanctions match. Name matched a listed person but identifiers differ. Adjudication required before onboarding"
+    ],
+    "completeness": 1.0
   },
   {
     "agent": "case_summary_llm",
@@ -113,15 +128,16 @@
       "risk_signal_received": "HIGH",
       "verified": [
         "Identity verification complete",
+        "PEP screening complete",
         "Source of wealth and funds supported by documents"
       ],
       "needs_review": [
-        "Potential sanctions match. Name matched a listed person but identifiers differ. Adjudication required before onboarding."
+        "Potential sanctions match. Name matched a listed person but identifiers differ. Adjudication required before onboarding"
       ]
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**OPENING LINE**  \nMichael Anderson is flagged with a HIGH risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- Source of wealth and source of funds have been supported by the client\u2019s documentation.\n\n**WHAT NEEDS REVIEW**  \n- A potential sanctions match was identified because the client\u2019s name appears on a sanctions list, although the accompanying identifiers (such as date of birth or address) do not match. This could indicate a false positive or a genuine risk, and it must be resolved before the onboarding can proceed.\n\n**WHERE TO FOCUS**  \n- Conduct an internal adjudication of the sanctions match: compare the client\u2019s full details (date of birth, passport number, address, etc.) against the listed individual\u2019s information to determine whether it is a true match or a false alarm.  \n- Document the findings of the adjudication in the client\u2019s file.  \n- **Do not contact the client about the potential match** until the internal review is completed.  \n\nProceed with the internal review steps and update the case once a determination is made.",
-    "timestamp": "2026-08-16T01:26:13.476594-04:00",
-    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+    "reasoning": "**OPENING LINE**  \nMichael Anderson \u2013 risk signal: HIGH  \n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- Politically Exposed Person (PEP) screening is complete with no concerns.  \n- Documentation supporting the source of wealth and source of funds has been provided and accepted.  \n\n**WHAT NEEDS REVIEW**  \n- A potential sanctions match was flagged because the name \u201cMichael Anderson\u201d appears on a sanctions list, but the accompanying identifiers (such as date of birth, address, or passport number) do not exactly match. This discrepancy could indicate a false positive or a genuine risk, and it must be resolved before the client can be onboarded.  \n\n**WHERE TO FOCUS**  \n- Conduct a detailed adjudication of the sanctions hit: compare the client\u2019s personal details (DOB, passport number, address, etc.) against the sanctions record to confirm whether it is a true match or a false positive.  \n- If the identifiers differ, request additional clarification from the client (e.g., a copy of the passport or government\u2011issued ID) and, if needed, obtain supporting documentation that proves the client is not the listed individual.  \n- Document the investigation outcome and any supporting evidence in the client file, and forward the findings to the sanctions compliance team for final sign\u2011off.",
+    "timestamp": "2026-08-20T09:03:03.828070-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]

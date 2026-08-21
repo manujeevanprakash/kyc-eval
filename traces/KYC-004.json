@@ -3,12 +3,13 @@
     "agent": "orchestrator",
     "input": {
       "case_id": "KYC-004",
-      "source_of_wealth_description": "Consulting income accumulated over 10 years"
+      "business_wealth_declared": false,
+      "crypto_declared": false
     },
     "finding": "PLAN_CREATED",
-    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on the declared source of wealth.",
-    "timestamp": "2026-08-16T01:26:11.217625-04:00",
-    "regulatory_basis": "OSFI E-23 - agent selection and input scope must be documented and independently reviewable",
+    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on whether the case declares business wealth.",
+    "timestamp": "2026-08-20T09:03:01.526102-04:00",
+    "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
         "identity",
@@ -22,24 +23,27 @@
             "client.nationality",
             "client.residency",
             "documents.government_id"
-          ]
+          ],
+          "regulatory_requirement": "Client identity must be verified before an account is opened"
         },
         "screening": {
           "use": [
             "client.full_name",
-            "client.nationality",
-            "client.pep_declared",
-            "client.cross_border_transactions"
-          ]
+            "client.date_of_birth",
+            "client.pep_declared"
+          ],
+          "regulatory_requirement": "Clients must be screened against sanctions lists and politically exposed person registries"
         },
         "wealth": {
           "use": [
-            "source_of_wealth",
-            "source_of_funds",
+            "source_of_wealth_personal",
+            "source_of_funds_personal",
+            "client.cross_border_transactions",
+            "client.expected_destination_countries",
             "documents.wealth_document",
-            "documents.bank_statements",
-            "documents.crypto_records"
-          ]
+            "documents.bank_statements"
+          ],
+          "regulatory_requirement": "Source of wealth and source of funds must be verified for high-net-worth clients"
         }
       }
     }
@@ -54,21 +58,27 @@
     },
     "finding": "IDENTITY_INCOMPLETE",
     "reasoning": "Residency not declared.",
-    "timestamp": "2026-08-16T01:26:11.218972-04:00",
-    "regulatory_basis": "PCMLTFA - identity verification required before account opening"
+    "timestamp": "2026-08-20T09:03:01.526862-04:00",
+    "regulatory_basis": "PCMLTFA - identity verification required before account opening; cannot proceed with incomplete information",
+    "method": "GOVERNMENT_PHOTO_ID",
+    "external_verification_performed": false
   },
   {
     "agent": "screening",
     "input": {
       "full_name": "Daniel Hayes",
       "date_of_birth": "1983-07-05",
-      "pep_declared": false,
-      "cross_border_transactions": false
+      "pep_declared": false
     },
     "finding": "NO_SCREENING_INDICATORS",
-    "reasoning": "No sanctions match found for Daniel Hayes. No PEP indicators. No cross-border activity declared.",
-    "timestamp": "2026-08-16T01:26:11.220783-04:00",
-    "regulatory_basis": "PCMLTFA s.9.6 - sanctions screening performed, no match returned"
+    "reasoning": "No sanctions match found for Daniel Hayes. No PEP indicators.",
+    "timestamp": "2026-08-20T09:03:01.528624-04:00",
+    "regulatory_basis": "PCMLTFA - screening completed with no indicators found",
+    "lists_checked": [
+      "sanctions",
+      "politically_exposed_persons"
+    ],
+    "external_screening_performed": false
   },
   {
     "agent": "wealth",
@@ -77,14 +87,17 @@
       "source_of_funds": "Business account transfer",
       "declared_amount": 200000,
       "crypto_involved": false,
+      "cross_border_transactions": false,
+      "expected_destination_countries": [],
       "wealth_document_present": false,
       "bank_statements_present": false,
       "crypto_records_present": false
     },
     "finding": "WEALTH_EVIDENCE_INCOMPLETE",
     "reasoning": "Wealth document not uploaded. Bank statements not uploaded.",
-    "timestamp": "2026-08-16T01:26:11.220154-04:00",
-    "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
+    "timestamp": "2026-08-20T09:03:01.527934-04:00",
+    "regulatory_basis": "PCMLTFA - source of wealth and funds verification cannot be completed; required documents missing",
+    "document_contents_reviewed": false
   },
   {
     "agent": "risk_engine",
@@ -94,16 +107,17 @@
       "wealth": "WEALTH_EVIDENCE_INCOMPLETE"
     },
     "finding": "CANNOT_CLASSIFY",
-    "reasoning": "This case cannot be classified until the following are provided: Identity information is incomplete; Required wealth documents are missing.",
-    "timestamp": "2026-08-16T01:26:11.223660-04:00",
-    "regulatory_basis": "FINTRAC - a client risk rating cannot be assigned until the required information is obtained",
+    "reasoning": "Case completeness is 43%, below the 70% threshold. Additional documents or client information must be provided before this case can be classified.",
+    "timestamp": "2026-08-20T09:03:01.530321-04:00",
+    "regulatory_basis": "Insufficient information to classify risk; missing documents or declarations must be obtained",
     "verified": [
       "No sanctions or PEP indicators found"
     ],
     "needs_review": [
       "Identity verification incomplete",
       "Required wealth documents are missing"
-    ]
+    ],
+    "completeness": 0.43
   },
   {
     "agent": "case_summary_llm",
@@ -120,8 +134,8 @@
       ]
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**OPENING LINE**  \nClient\u202fDaniel\u202fHayes is currently flagged as **CANNOT_CLASSIFY**.\n\n**WHAT HAS BEEN VERIFIED**  \n- No sanctions or politically exposed person matches were found.\n\n**WHAT NEEDS REVIEW**  \n- **Identity verification is incomplete** \u2013 without a confirmed government\u2011issued ID and proof of address we cannot be sure the person is who they claim to be.  \n- **Required wealth documents are missing** \u2013 we need evidence of the source and amount of the client\u2019s assets (e.g., financial statements, tax returns, valuation reports) to assess suitability and meet anti\u2011money\u2011laundering standards.\n\n**WHERE TO FOCUS**  \n1. Request Daniel Hayes to provide a clear, unexpired passport or driver\u2019s licence plus a recent utility bill or bank statement showing his residential address. Verify that the documents are authentic and match the information on the application.  \n2. Ask for comprehensive wealth documentation, such as recent audited financial statements, tax filings, or third\u2011party valuation reports that demonstrate the origin and size of his assets. Ensure the documents are dated, signed where required, and cover the relevant time period.  \n\nOnce these items are received and validated, the case can move forward for further assessment.",
-    "timestamp": "2026-08-16T01:26:12.428582-04:00",
-    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+    "reasoning": "**OPENING LINE**  \nClient\u202fDaniel\u202fHayes \u2013 risk signal: CANNOT_CLASSIFY.  \n\n**WHAT HAS BEEN VERIFIED**  \n- No sanctions or politically exposed person (PEP) indicators were found.  \n\n**WHAT NEEDS REVIEW**  \n- Identity verification is incomplete \u2013 without a confirmed government\u2011issued ID and proof of address we cannot be sure the person is who they claim to be.  \n- Required wealth documents are missing \u2013 we need evidence of the source and amount of the client\u2019s assets to assess suitability and AML risk.  \n\n**WHERE TO FOCUS**  \n- Request Daniel to provide a clear, unexpired government photo ID (passport or driver\u2019s licence) and a recent utility bill or bank statement showing his residential address. Verify that the details match the information already on file.  \n- Ask for up\u2011to\u2011date wealth documentation, such as recent bank statements, investment account statements, property deeds, or tax returns that demonstrate the origin and size of his assets. Ensure the documents cover the last 12\u202fmonths and are authentic.  \n\nThese actions will bring the case above the 70\u202f% completeness threshold and allow the risk engine to assign a definitive risk rating.",
+    "timestamp": "2026-08-20T09:03:02.594397-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]

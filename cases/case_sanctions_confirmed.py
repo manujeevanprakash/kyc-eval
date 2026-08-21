@@ -1,7 +1,8 @@
-# Tuple: Private Investor | Confirmed sanctions match | Hard stop
+# Michael Anderson, born 1959 — name and date of birth both match
 #
-# Same name as KYC-005. The date of birth matches the list entry.
+# Same name as KYC-005. The date of birth matches the list entry too.
 # One field of difference between the two cases, opposite outcomes.
+# One is adjudicated. This one is a hard stop.
 
 EXPECTED_RISK_SIGNAL = "HIGH"
 
@@ -13,26 +14,27 @@ case_sanctions_confirmed = {
         "occupation": "Private Investor",
         "nationality": "Canadian",
         "residency": "Calgary, Canada",
-        "net_worth_declared": 5_000_000,
         "pep_declared": False,
-        "cross_border_transactions": True,
+        "cross_border_transactions": False,
     },
-    "source_of_wealth": {
+    "planned_funding_total": {"amount": 900_000, "currency": "CAD"},
+
+    "source_of_wealth_personal": {
         "description": "Private investment holdings",
-        "amount": 5_000_000,
-        "currency": "CAD",
     },
-    "source_of_funds": {
+    "source_of_funds_personal": {
         "description": "Transfer from an overseas investment account",
         "amount": 900_000,
         "currency": "CAD",
         "crypto_involved": False,
     },
+
     "documents": {
         "government_id": True,
         "bank_statements": True,
         "wealth_document": True,
         "business_documents": False,
+        "income_evidence": True,
         "crypto_records": False,
     },
 }

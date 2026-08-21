@@ -3,12 +3,13 @@
     "agent": "orchestrator",
     "input": {
       "case_id": "KYC-001",
-      "source_of_wealth_description": "Salary and annual bonuses accumulated over 20 years"
+      "business_wealth_declared": false,
+      "crypto_declared": false
     },
     "finding": "PLAN_CREATED",
-    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on the declared source of wealth.",
-    "timestamp": "2026-08-16T01:26:08.082492-04:00",
-    "regulatory_basis": "OSFI E-23 - agent selection and input scope must be documented and independently reviewable",
+    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on whether the case declares business wealth.",
+    "timestamp": "2026-08-20T09:02:57.797508-04:00",
+    "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
         "identity",
@@ -22,24 +23,27 @@
             "client.nationality",
             "client.residency",
             "documents.government_id"
-          ]
+          ],
+          "regulatory_requirement": "Client identity must be verified before an account is opened"
         },
         "screening": {
           "use": [
             "client.full_name",
-            "client.nationality",
-            "client.pep_declared",
-            "client.cross_border_transactions"
-          ]
+            "client.date_of_birth",
+            "client.pep_declared"
+          ],
+          "regulatory_requirement": "Clients must be screened against sanctions lists and politically exposed person registries"
         },
         "wealth": {
           "use": [
-            "source_of_wealth",
-            "source_of_funds",
+            "source_of_wealth_personal",
+            "source_of_funds_personal",
+            "client.cross_border_transactions",
+            "client.expected_destination_countries",
             "documents.wealth_document",
-            "documents.bank_statements",
-            "documents.crypto_records"
-          ]
+            "documents.bank_statements"
+          ],
+          "regulatory_requirement": "Source of wealth and source of funds must be verified for high-net-worth clients"
         }
       }
     }
@@ -54,21 +58,27 @@
     },
     "finding": "IDENTITY_VERIFIED",
     "reasoning": "Identity evidence is present for Sarah Mitchell. Government ID uploaded. Nationality and residency declared.",
-    "timestamp": "2026-08-16T01:26:08.083927-04:00",
-    "regulatory_basis": "PCMLTFA - identity verification required before account opening"
+    "timestamp": "2026-08-20T09:02:57.798869-04:00",
+    "regulatory_basis": "PCMLTFA - identity verification required before account opening",
+    "method": "GOVERNMENT_PHOTO_ID",
+    "external_verification_performed": false
   },
   {
     "agent": "screening",
     "input": {
       "full_name": "Sarah Mitchell",
       "date_of_birth": "1979-04-22",
-      "pep_declared": false,
-      "cross_border_transactions": false
+      "pep_declared": false
     },
     "finding": "NO_SCREENING_INDICATORS",
-    "reasoning": "No sanctions match found for Sarah Mitchell. No PEP indicators. No cross-border activity declared.",
-    "timestamp": "2026-08-16T01:26:08.084901-04:00",
-    "regulatory_basis": "PCMLTFA s.9.6 - sanctions screening performed, no match returned"
+    "reasoning": "No sanctions match found for Sarah Mitchell. No PEP indicators.",
+    "timestamp": "2026-08-20T09:02:57.800276-04:00",
+    "regulatory_basis": "PCMLTFA - screening completed with no indicators found",
+    "lists_checked": [
+      "sanctions",
+      "politically_exposed_persons"
+    ],
+    "external_screening_performed": false
   },
   {
     "agent": "wealth",
@@ -77,14 +87,17 @@
       "source_of_funds": "Salary transfer from employer",
       "declared_amount": 500000,
       "crypto_involved": false,
+      "cross_border_transactions": false,
+      "expected_destination_countries": [],
       "wealth_document_present": true,
       "bank_statements_present": true,
       "crypto_records_present": false
     },
     "finding": "WEALTH_SUPPORTED",
-    "reasoning": "Wealth document present. Declared source of funds: Salary transfer from employer. Bank statements present. All required wealth and funds documents are present. No crypto exposure.",
-    "timestamp": "2026-08-16T01:26:08.085539-04:00",
-    "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
+    "reasoning": "Wealth document present. Declared source of wealth: Salary and annual bonuses accumulated over 20 years. Bank statements present. Declared source of funds: Salary transfer from employer. All required wealth and funds documents are present. No crypto exposure and no cross-border activity declared.",
+    "timestamp": "2026-08-20T09:02:57.799797-04:00",
+    "regulatory_basis": "PCMLTFA - source of wealth and funds verification completed",
+    "document_contents_reviewed": false
   },
   {
     "agent": "risk_engine",
@@ -94,15 +107,16 @@
       "wealth": "WEALTH_SUPPORTED"
     },
     "finding": "LOW",
-    "reasoning": "All checks passed. No issues identified.",
-    "timestamp": "2026-08-16T01:26:08.086491-04:00",
-    "regulatory_basis": "FINTRAC - risk-based approach; a client risk rating is required for every business relationship",
+    "reasoning": "All compliance checks passed. No issues identified.",
+    "timestamp": "2026-08-20T09:02:57.801541-04:00",
+    "regulatory_basis": "Low risk - standard onboarding procedures apply",
     "verified": [
       "Identity verification complete",
       "No sanctions or PEP indicators found",
       "Source of wealth and funds supported by documents"
     ],
-    "needs_review": []
+    "needs_review": [],
+    "completeness": 1.0
   },
   {
     "agent": "case_summary_llm",
@@ -118,8 +132,8 @@
       "needs_review": []
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**OPENING LINE**  \nClient Sarah Mitchell has been flagged with a LOW risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions or politically exposed person (PEP) matches were found.  \n- Documentation supporting the source of her wealth and the source of funds has been provided and accepted.\n\n**WHAT NEEDS REVIEW**  \n- None \u2013 all required items have been satisfied.\n\n**WHERE TO FOCUS**  \n- No further action is required on verification items at this time. Proceed with the standard onboarding steps for a low\u2011risk client.",
-    "timestamp": "2026-08-16T01:26:08.964265-04:00",
-    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+    "reasoning": "**OPENING LINE**  \nClient Sarah Mitchell has been flagged with a LOW risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions or politically exposed person (PEP) matches were found.  \n- Source of wealth and source of funds are supported by the provided documentation.\n\n**WHAT NEEDS REVIEW**  \n- None \u2013 all required items have been satisfied.\n\n**WHERE TO FOCUS**  \n- No further action is required on outstanding items; you may proceed with the standard onboarding steps for a low\u2011risk client.",
+    "timestamp": "2026-08-20T09:02:58.716877-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]

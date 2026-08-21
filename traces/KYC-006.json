@@ -3,12 +3,13 @@
     "agent": "orchestrator",
     "input": {
       "case_id": "KYC-006",
-      "source_of_wealth_description": "Private investment holdings"
+      "business_wealth_declared": false,
+      "crypto_declared": false
     },
     "finding": "PLAN_CREATED",
-    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on the declared source of wealth.",
-    "timestamp": "2026-08-16T01:26:13.488529-04:00",
-    "regulatory_basis": "OSFI E-23 - agent selection and input scope must be documented and independently reviewable",
+    "reasoning": "Required checks: identity, screening, wealth. Business review not required based on whether the case declares business wealth.",
+    "timestamp": "2026-08-20T09:03:03.835554-04:00",
+    "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
         "identity",
@@ -22,24 +23,27 @@
             "client.nationality",
             "client.residency",
             "documents.government_id"
-          ]
+          ],
+          "regulatory_requirement": "Client identity must be verified before an account is opened"
         },
         "screening": {
           "use": [
             "client.full_name",
-            "client.nationality",
-            "client.pep_declared",
-            "client.cross_border_transactions"
-          ]
+            "client.date_of_birth",
+            "client.pep_declared"
+          ],
+          "regulatory_requirement": "Clients must be screened against sanctions lists and politically exposed person registries"
         },
         "wealth": {
           "use": [
-            "source_of_wealth",
-            "source_of_funds",
+            "source_of_wealth_personal",
+            "source_of_funds_personal",
+            "client.cross_border_transactions",
+            "client.expected_destination_countries",
             "documents.wealth_document",
-            "documents.bank_statements",
-            "documents.crypto_records"
-          ]
+            "documents.bank_statements"
+          ],
+          "regulatory_requirement": "Source of wealth and source of funds must be verified for high-net-worth clients"
         }
       }
     }
@@ -54,21 +58,27 @@
     },
     "finding": "IDENTITY_VERIFIED",
     "reasoning": "Identity evidence is present for Michael Anderson. Government ID uploaded. Nationality and residency declared.",
-    "timestamp": "2026-08-16T01:26:13.489546-04:00",
-    "regulatory_basis": "PCMLTFA - identity verification required before account opening"
+    "timestamp": "2026-08-20T09:03:03.836793-04:00",
+    "regulatory_basis": "PCMLTFA - identity verification required before account opening",
+    "method": "GOVERNMENT_PHOTO_ID",
+    "external_verification_performed": false
   },
   {
     "agent": "screening",
     "input": {
       "full_name": "Michael Anderson",
       "date_of_birth": "1959-01-19",
-      "pep_declared": false,
-      "cross_border_transactions": true
+      "pep_declared": false
     },
     "finding": "SANCTIONS_MATCH_CONFIRMED",
-    "reasoning": "Sanctions match confirmed for Michael Anderson. Name and date of birth both match a listed person. Hard stop under PCMLTFA s.9.6. No discretion permitted. Cross-border transactions expected. Adds complexity to the compliance review.",
-    "timestamp": "2026-08-16T01:26:13.490709-04:00",
-    "regulatory_basis": "PCMLTFA s.9.6 - dealings prohibited with a listed person; property must be reported via LPEPR"
+    "reasoning": "Sanctions match confirmed for Michael Anderson. Name and date of birth both match a listed person. Hard stop. No discretion permitted.",
+    "timestamp": "2026-08-20T09:03:03.837768-04:00",
+    "regulatory_basis": "PCMLTFA - dealing with a listed person is prohibited; hard stop, no discretion",
+    "lists_checked": [
+      "sanctions",
+      "politically_exposed_persons"
+    ],
+    "external_screening_performed": false
   },
   {
     "agent": "wealth",
@@ -77,14 +87,17 @@
       "source_of_funds": "Transfer from an overseas investment account",
       "declared_amount": 900000,
       "crypto_involved": false,
+      "cross_border_transactions": false,
+      "expected_destination_countries": [],
       "wealth_document_present": true,
       "bank_statements_present": true,
       "crypto_records_present": false
     },
     "finding": "WEALTH_SUPPORTED",
-    "reasoning": "Wealth document present. Declared source of funds: Transfer from an overseas investment account. Bank statements present. All required wealth and funds documents are present. No crypto exposure.",
-    "timestamp": "2026-08-16T01:26:13.491601-04:00",
-    "regulatory_basis": "PCMLTFA - source of wealth and source of funds verification required for high-net-worth clients"
+    "reasoning": "Wealth document present. Declared source of wealth: Private investment holdings. Bank statements present. Declared source of funds: Transfer from an overseas investment account. All required wealth and funds documents are present. No crypto exposure and no cross-border activity declared.",
+    "timestamp": "2026-08-20T09:03:03.839102-04:00",
+    "regulatory_basis": "PCMLTFA - source of wealth and funds verification completed",
+    "document_contents_reviewed": false
   },
   {
     "agent": "risk_engine",
@@ -94,16 +107,17 @@
       "wealth": "WEALTH_SUPPORTED"
     },
     "finding": "HIGH",
-    "reasoning": "Sanctions match confirmed. Hard stop under PCMLTFA s.9.6. Case cannot proceed.",
-    "timestamp": "2026-08-16T01:26:13.493811-04:00",
-    "regulatory_basis": "PCMLTFA s.9.6 - dealings prohibited with a listed person; property must be reported via LPEPR",
+    "reasoning": "Confirmed sanctions match. Hard stop. Case cannot proceed.",
+    "timestamp": "2026-08-20T09:03:03.839990-04:00",
+    "regulatory_basis": "High risk - enhanced due diligence required",
     "verified": [
       "Identity verification complete",
       "Source of wealth and funds supported by documents"
     ],
     "needs_review": [
-      "Confirmed sanctions match. Case cannot proceed."
-    ]
+      "Confirmed sanctions match. Case cannot proceed"
+    ],
+    "completeness": 1.0
   },
   {
     "agent": "case_summary_llm",
@@ -116,12 +130,12 @@
         "Source of wealth and funds supported by documents"
       ],
       "needs_review": [
-        "Confirmed sanctions match. Case cannot proceed."
+        "Confirmed sanctions match. Case cannot proceed"
       ]
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**OPENING LINE**  \nMichael Anderson \u2013 risk signal: HIGH  \n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- Source of wealth and source of funds have been documented and supported.  \n\n**WHAT NEEDS REVIEW**  \n- A sanctions match has been identified. This matters because any match to a sanctions list could indicate that the client is prohibited from conducting transactions with the bank, and proceeding without resolution would breach the PCMLTFA and could expose the institution to regulatory penalties.  \n\n**WHERE TO FOCUS**  \n- Re\u2011run the sanctions screening to confirm the exact list and reference (e.g., OFAC, UN, EU).  \n- Gather any additional identifying information (passport, address, corporate affiliations) to determine if the match is a false positive.  \n- Escalate the finding to the legal/compliance sanctions team for a formal determination and to decide whether a SAR (Suspicious Activity Report) is required.  \n- Document the investigation steps and outcomes in the client file before any further action on the onboarding can be considered.",
-    "timestamp": "2026-08-16T01:26:14.650059-04:00",
-    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+    "reasoning": "**OPENING LINE**  \nClient Michael Anderson has been flagged with a HIGH risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- Source of wealth and source of funds have been supported by the client\u2019s documentation.\n\n**WHAT NEEDS REVIEW**  \n- A sanctions match has been identified. This matters because any link to a sanctioned individual, entity, or jurisdiction could expose the bank to regulatory penalties and reputational damage, and it triggers a mandatory halt in processing until clarified.\n\n**WHERE TO FOCUS**  \n- Re\u2011run the sanctions screening using the latest sanctions lists to confirm the match details (name, date of birth, address, etc.).  \n- Obtain additional documentation from the client that could clarify the nature of the match (e.g., proof of identity for the listed individual, explanation of any name similarity, or evidence that the match is a false positive).  \n- If the match remains valid, initiate the internal escalation process: notify the sanctions compliance team, prepare a sanctions review file, and consider filing a suspicious activity report as required by FINTRAC.  \n- Document all steps taken and any communications with the client in the case file.",
+    "timestamp": "2026-08-20T09:03:05.056133-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]

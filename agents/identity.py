@@ -4,47 +4,50 @@ from config import REGULATORY_BASIS
 
 
 def _toronto_now_iso():
+    # Toronto time for every timestamp, since this prototype is built
+    # around a Canadian bank.
     return datetime.now(ZoneInfo("America/Toronto")).isoformat()
 
 
 def _has_value(value):
-    # Checks whether a required field has been provided
+    # A field counts as declared only if the client actually put
+    # something in it. An empty string is the same as leaving it blank.
     if value is None:
         return False
+
     if isinstance(value, str):
         return bool(value.strip())
-    if isinstance(value, bool):
-        return True
+
     return bool(value)
 
 
 def run_identity(case: dict) -> dict:
     """
-    Identity Verification Agent — deterministic.
-    Checks document presence and profile completeness.
-    No LLM involved — rules only.
+    Identity Verification Agent — deterministic, no model involved.
 
-    In production: connects to approved identity verification
-    systems, credit bureaus, and document verification tools.
-    In this prototype: checks whether required inputs are present.
+    It answers one question. Do we have what we need to say this client
+    is who they claim to be?
+
+    In this prototype that means checking the details are declared and
+    the government ID was uploaded. A real bank goes further and checks
+    those details against a credit bureau or an identity provider such
+    as Equifax, Trulioo or Onfido. Nothing here contacts an outside
+    source, and the record says so.
     """
 
     client = case["client"]
     documents = case["documents"]
 
-    # Rule 1: Government ID must be uploaded
+    # Read only the four fields the orchestrator assigned to this check.
+    # The case carries other documents, and none of them belong here.
     government_id_present = documents.get("government_id", False)
-
-    # Rule 2: Full name must be present
     name_present = _has_value(client.get("full_name"))
-
-    # Rule 3: Nationality must be declared
     nationality_present = _has_value(client.get("nationality"))
-
-    # Rule 4: Residency must be declared
     residency_present = _has_value(client.get("residency"))
 
-    # All four checks must pass for identity to be verified
+    # All four have to be there. One missing field is enough to stop
+    # this check, because a bank cannot verify an identity from a
+    # partial record.
     all_passed = all([
         government_id_present,
         name_present,
@@ -54,7 +57,10 @@ def run_identity(case: dict) -> dict:
 
     finding = "IDENTITY_VERIFIED" if all_passed else "IDENTITY_INCOMPLETE"
 
+    # Name what is missing rather than saying the check failed. The
+    # compliance officer needs to know which document to ask for.
     reasons = []
+
     if not government_id_present:
         reasons.append("Government ID not uploaded.")
     if not name_present:
@@ -63,6 +69,7 @@ def run_identity(case: dict) -> dict:
         reasons.append("Nationality not declared.")
     if not residency_present:
         reasons.append("Residency not declared.")
+
     if all_passed:
         reasons.append(
             f"Identity evidence is present for "
@@ -83,4 +90,9 @@ def run_identity(case: dict) -> dict:
         "reasoning": " ".join(reasons),
         "timestamp": _toronto_now_iso(),
         "regulatory_basis": REGULATORY_BASIS[finding],
+        # Which method was used, and how far it went. A validator asks
+        # both questions, and the second one matters here because this
+        # prototype checks evidence rather than confirming it.
+        "method": "GOVERNMENT_PHOTO_ID",
+        "external_verification_performed": False,
     }

@@ -3,12 +3,13 @@
     "agent": "orchestrator",
     "input": {
       "case_id": "KYC-003",
-      "source_of_wealth_description": "Sale of private software company based in Toronto"
+      "business_wealth_declared": true,
+      "crypto_declared": true
     },
     "finding": "PLAN_CREATED",
-    "reasoning": "Required checks: identity, screening, wealth, business. Business review included based on the declared source of wealth.",
-    "timestamp": "2026-08-16T01:26:10.095779-04:00",
-    "regulatory_basis": "OSFI E-23 - agent selection and input scope must be documented and independently reviewable",
+    "reasoning": "Required checks: identity, screening, wealth, business. Business review included based on whether the case declares business wealth.",
+    "timestamp": "2026-08-20T09:03:00.045080-04:00",
+    "regulatory_basis": "Agent selection and input scope must be documented and independently reviewable",
     "plan": {
       "required_checks": [
         "identity",
@@ -23,31 +24,38 @@
             "client.nationality",
             "client.residency",
             "documents.government_id"
-          ]
+          ],
+          "regulatory_requirement": "Client identity must be verified before an account is opened"
         },
         "screening": {
           "use": [
             "client.full_name",
-            "client.nationality",
-            "client.pep_declared",
-            "client.cross_border_transactions"
-          ]
+            "client.date_of_birth",
+            "client.pep_declared"
+          ],
+          "regulatory_requirement": "Clients must be screened against sanctions lists and politically exposed person registries"
         },
         "wealth": {
           "use": [
-            "source_of_wealth",
-            "source_of_funds",
+            "source_of_wealth_personal",
+            "source_of_funds_personal",
+            "client.cross_border_transactions",
+            "client.expected_destination_countries",
             "documents.wealth_document",
             "documents.bank_statements",
             "documents.crypto_records"
-          ]
+          ],
+          "regulatory_requirement": "Source of wealth and source of funds must be verified for high-net-worth clients"
         },
         "business": {
           "use": [
-            "source_of_wealth.description",
             "client.full_name",
-            "documents.business_documents"
-          ]
+            "source_of_wealth_business",
+            "source_of_funds_business",
+            "documents.business_documents",
+            "documents.income_evidence"
+          ],
+          "regulatory_requirement": "Where wealth derives from a business, ownership must be confirmed against registry records, along with how the client received the money"
         }
       }
     }
@@ -62,50 +70,62 @@
     },
     "finding": "IDENTITY_VERIFIED",
     "reasoning": "Identity evidence is present for James Whitmore. Government ID uploaded. Nationality and residency declared.",
-    "timestamp": "2026-08-16T01:26:10.096865-04:00",
-    "regulatory_basis": "PCMLTFA - identity verification required before account opening"
+    "timestamp": "2026-08-20T09:03:00.045982-04:00",
+    "regulatory_basis": "PCMLTFA - identity verification required before account opening",
+    "method": "GOVERNMENT_PHOTO_ID",
+    "external_verification_performed": false
   },
   {
     "agent": "screening",
     "input": {
       "full_name": "James Whitmore",
       "date_of_birth": "1971-02-11",
-      "pep_declared": true,
-      "cross_border_transactions": true
+      "pep_declared": true
     },
     "finding": "PEP_CONFIRMED",
-    "reasoning": "James Whitmore appears in the PEP registry. Client declared PEP status at onboarding. Cross-border transactions expected. Adds complexity to the compliance review.",
-    "timestamp": "2026-08-16T01:26:10.097822-04:00",
-    "regulatory_basis": "FINTRAC - PEP determination required at onboarding; enhanced due diligence mandatory once confirmed"
+    "reasoning": "James Whitmore appears in the PEP registry. Client declared PEP status at onboarding.",
+    "timestamp": "2026-08-20T09:03:00.047462-04:00",
+    "regulatory_basis": "FINTRAC - PEP determination required at onboarding; enhanced due diligence mandatory once confirmed",
+    "lists_checked": [
+      "sanctions",
+      "politically_exposed_persons"
+    ],
+    "external_screening_performed": false
   },
   {
     "agent": "wealth",
     "input": {
-      "source_of_wealth": "Sale of private software company based in Toronto",
-      "source_of_funds": "Crypto exchange transfer",
+      "source_of_wealth": "Crypto holdings held through a crypto exchange",
+      "source_of_funds": "Planned transfer from crypto exchange account",
       "declared_amount": 1000000,
       "crypto_involved": true,
+      "cross_border_transactions": false,
+      "expected_destination_countries": [],
       "wealth_document_present": true,
       "bank_statements_present": true,
       "crypto_records_present": true
     },
     "finding": "WEALTH_SUPPORTED_CRYPTO_PRESENT",
-    "reasoning": "Wealth document present. Declared source of funds: Crypto exchange transfer. Bank statements present. Crypto funds declared as source of funds (CAD 1,000,000). Crypto exchange records present. Source of crypto funds requires compliance officer review.",
-    "timestamp": "2026-08-16T01:26:10.098576-04:00",
-    "regulatory_basis": "PCMLTFA virtual currency amendments - source of virtual currency must be verified and transactions screened"
+    "reasoning": "Wealth document present. Declared source of wealth: Crypto holdings held through a crypto exchange. Bank statements present. Declared source of funds: Planned transfer from crypto exchange account. Crypto funds declared as source of funds (CAD 1,000,000). Crypto exchange records present. Source of crypto funds requires compliance officer review.",
+    "timestamp": "2026-08-20T09:03:00.049189-04:00",
+    "regulatory_basis": "PCMLTFA - wealth supported; crypto funds declared with exchange records present but crypto origin requires compliance officer review",
+    "document_contents_reviewed": false
   },
   {
     "agent": "business",
     "input": {
       "full_name": "James Whitmore",
-      "source_of_wealth": "Sale of private software company based in Toronto",
-      "declared_wealth_amount": 18000000,
-      "business_documents_present": true
+      "declared_company": "Whitmore Software Inc.",
+      "declared_status": "SOLD",
+      "declared_amount": 18000000,
+      "business_documents_present": true,
+      "income_evidence_present": true
     },
     "finding": "BUSINESS_SALE_SUPPORTED",
-    "reasoning": "Business sale documents present. James Whitmore found in corporate registry as Founder and CEO of Whitmore Software Inc.. Declared sale amount of CAD 18,000,000 is consistent with registry record. Planned business sale transfer: CAD 4,000,000. Transfer to be confirmed once funds are received.",
-    "timestamp": "2026-08-16T01:26:10.100842-04:00",
-    "regulatory_basis": "FINTRAC - beneficial ownership confirmation; 25 percent control threshold applies to corporate structures"
+    "reasoning": "Business sale confirmed for James Whitmore. Company: Whitmore Software Inc.. Role: Founder and CEO. Sale amount: CAD 18,000,000. Registry and declared amounts are consistent. Business documents are on file.",
+    "timestamp": "2026-08-20T09:03:00.050604-04:00",
+    "regulatory_basis": "Business sale confirmed by the corporate registry",
+    "external_registry_checked": false
   },
   {
     "agent": "risk_engine",
@@ -116,9 +136,9 @@
       "business": "BUSINESS_SALE_SUPPORTED"
     },
     "finding": "HIGH",
-    "reasoning": "PEP status confirmed and crypto origin not established. Enhanced due diligence required under FINTRAC guidelines.",
-    "timestamp": "2026-08-16T01:26:10.101532-04:00",
-    "regulatory_basis": "FINTRAC - PEP determination required at onboarding; enhanced due diligence mandatory once confirmed",
+    "reasoning": "PEP status confirmed and crypto origin not established. Enhanced due diligence required.",
+    "timestamp": "2026-08-20T09:03:00.051724-04:00",
+    "regulatory_basis": "High risk - enhanced due diligence required",
     "verified": [
       "Identity verification complete",
       "No sanctions match found",
@@ -126,9 +146,10 @@
       "Business sale context supported by documents and registry"
     ],
     "needs_review": [
-      "PEP status confirmed. Enhanced due diligence required.",
-      "Crypto funds declared. Exchange records present but the origin of the crypto funds is not established."
-    ]
+      "PEP status confirmed. Enhanced due diligence required",
+      "Crypto funds declared. Exchange records present but origin of crypto funds not established"
+    ],
+    "completeness": 1.0
   },
   {
     "agent": "case_summary_llm",
@@ -143,13 +164,13 @@
         "Business sale context supported by documents and registry"
       ],
       "needs_review": [
-        "PEP status confirmed. Enhanced due diligence required.",
-        "Crypto funds declared. Exchange records present but the origin of the crypto funds is not established."
+        "PEP status confirmed. Enhanced due diligence required",
+        "Crypto funds declared. Exchange records present but origin of crypto funds not established"
       ]
     },
     "finding": "SUMMARY_GENERATED",
-    "reasoning": "**OPENING LINE**  \nJames Whitmore is flagged with a HIGH risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions match was found.  \n- Wealth documents and bank statements have been provided and are on file.  \n- The sale of his business is supported by the relevant documents and the corporate registry.\n\n**WHAT NEEDS REVIEW**  \n- James is identified as a politically exposed person (PEP). This matters because PEPs require additional scrutiny to ensure their source of wealth is legitimate and to mitigate potential corruption risks.  \n- He has declared crypto\u2011derived funds. While exchange transaction records are available, the original source of those crypto assets has not been established, raising concerns about possible money\u2011laundering exposure.\n\n**WHERE TO FOCUS**  \n- For the PEP status: conduct enhanced due diligence by obtaining a detailed explanation of how the political exposure relates to his wealth, gather information on any public office held, and verify the legitimacy of the funds linked to that exposure.  \n- For the crypto funds: request documentation that traces the crypto assets back to their original acquisition (e.g., purchase receipts, mining records, or transfer histories) and assess whether the source complies with FINTRAC\u2019s anti\u2011money\u2011laundering requirements.  \n\nThese steps will address the outstanding risk factors before the onboarding decision can be finalized.",
-    "timestamp": "2026-08-16T01:26:11.207245-04:00",
-    "regulatory_basis": "OSFI E-23 - AI-assisted output must be explainable, documented and independently reviewable"
+    "reasoning": "**OPENING LINE**  \nJames\u202fWhitmore is flagged with a HIGH risk signal.\n\n**WHAT HAS BEEN VERIFIED**  \n- Identity verification is complete.  \n- No sanctions match was found.  \n- Wealth documents and bank statements have been provided and are on file.  \n- The sale of his business is supported by the relevant documents and the corporate registry.\n\n**WHAT NEEDS REVIEW**  \n- James is identified as a Politically Exposed Person (PEP). This matters because PEPs can be subject to higher corruption and bribery risk, so the bank must conduct enhanced due\u2011diligence.  \n- He has declared crypto\u2011derived funds. While exchange records are available, the original source of those crypto assets has not been established, raising a potential money\u2011laundering concern.\n\n**WHERE TO FOCUS**  \n- **PEP status:** Gather detailed information on the nature of his political exposure (e.g., current or former public office, close family members, or associates). Obtain a thorough source\u2011of\u2011wealth narrative that links his political connections to his financial assets, and run a deeper background check on any related parties. Document the findings and consider a senior\u2011level review.  \n- **Crypto fund origin:** Request additional documentation that traces the crypto assets back to their original acquisition\u2014such as purchase receipts, wallet addresses, transaction histories, or a letter from the exchange confirming the fund\u2019s provenance. Verify that the crypto was obtained through legitimate activities before accepting it as part of his wealth.  \n\nProceed with these steps to complete the enhanced due\u2011diligence package for James\u202fWhitmore.",
+    "timestamp": "2026-08-20T09:03:01.521002-04:00",
+    "regulatory_basis": "OSFI E-23 - AI-assisted decisions must be explainable and documented"
   }
 ]

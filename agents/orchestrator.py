@@ -3,86 +3,157 @@ from zoneinfo import ZoneInfo
 
 
 def _toronto_now_iso():
-    # Toronto time for all timestamps — matches Canada focus of prototype
+    # Toronto time for every timestamp, since this prototype is built
+    # around a Canadian bank.
     return datetime.now(ZoneInfo("America/Toronto")).isoformat()
 
 
 def run_orchestrator(case: dict) -> dict:
     """
-    Orchestrator — creates the agent execution plan.
-    Does NOT run agents. Does NOT make risk decisions.
-    Decides which agents are needed based on the case profile.
+    Orchestrator — builds the plan for a case.
 
-    Carries the six audit fields every agent record has, plus the plan
-    itself. Without this record the trace begins at identity, and nothing
-    documents why those agents were chosen.
+    It answers three questions. Which agents need to run for this client,
+    what each one is allowed to read, and why that check is required.
+
+    It does not run the agents. LangGraph does that, using this plan.
+    It does not decide how an agent performs its check either. Which
+    identity method applies depends on what the client actually uploaded,
+    and only the identity agent sees that.
+
+    The plan is written into the trace. Without it, the trace starts at
+    identity and nothing records why those agents were chosen.
     """
 
     case_id = case["case_id"]
 
-    # These three checks always run for every HNW case
+    # Every high-net-worth client goes through these three, whatever
+    # else the case contains.
     required_checks = [
         "identity",
         "screening",
         "wealth",
     ]
 
-    # Business structure review only triggers when business sale is present
-    source_of_wealth = case.get("source_of_wealth", {})
-    wealth_description = source_of_wealth.get("description", "").lower()
-    has_business_sale = (
-        "business" in wealth_description or "sale" in wealth_description
-    )
+    # The fourth check is the one that varies. It runs only when the
+    # case declares business wealth.
+    #
+    # This reads a declared field rather than searching a description
+    # for the word "sale". A client whose wealth came from the sale of
+    # an inherited painting should never trigger a corporate registry
+    # check, and keyword matching cannot tell the difference.
+    has_business_wealth = bool(case.get("source_of_wealth_business"))
 
-    if has_business_sale:
+    if has_business_wealth:
         required_checks.append("business")
 
-    # Dispatch instructions tell each agent exactly which fields to read
-    # This makes agent inputs explicit and auditable — OSFI E-23
+    # Each agent gets two things. The fields it is allowed to read, and
+    # the requirement behind the check.
+    #
+    # That requirement is known before anything runs. Identity has to be
+    # verified whether or not the documents turn out to be in order.
+    # What a finding later obliges the bank to do is a separate matter,
+    # and the agent records that alongside its own result.
     dispatch_instructions = {
         "identity": {
-            "use": ["client.full_name", "client.nationality",
-                    "client.residency", "documents.government_id"]
+            "use": [
+                "client.full_name",
+                "client.nationality",
+                "client.residency",
+                "documents.government_id",
+            ],
+            "regulatory_requirement": (
+                "Client identity must be verified before an account "
+                "is opened"
+            ),
         },
+        # Screening needs very little. A name and a date of birth are
+        # enough to check a client against the lists, because the lists
+        # themselves live inside the agent.
         "screening": {
-            "use": ["client.full_name", "client.nationality",
-                    "client.pep_declared", "client.cross_border_transactions"]
-        },
-        "wealth": {
-            "use": ["source_of_wealth", "source_of_funds",
-                    "documents.wealth_document", "documents.bank_statements",
-                    "documents.crypto_records"]
+            "use": [
+                "client.full_name",
+                "client.date_of_birth",
+                "client.pep_declared",
+            ],
+            "regulatory_requirement": (
+                "Clients must be screened against sanctions lists and "
+                "politically exposed person registries"
+            ),
         },
     }
 
-    if "business" in required_checks:
+    # The wealth agent only looks at personal wealth and personal funds.
+    # Anything connected to a business goes to the business agent, which
+    # has its own checks to run against a registry.
+    wealth_fields = [
+        "source_of_wealth_personal",
+        "source_of_funds_personal",
+        "client.cross_border_transactions",
+        "client.expected_destination_countries",
+        "documents.wealth_document",
+        "documents.bank_statements",
+    ]
+
+    # Crypto records only matter when the client declared crypto. Listing
+    # them for every case would put a field in the audit record that the
+    # agent had no reason to open.
+    source_of_funds_personal = case.get("source_of_funds_personal", {})
+
+    if source_of_funds_personal.get("crypto_involved"):
+        wealth_fields.append("documents.crypto_records")
+
+    dispatch_instructions["wealth"] = {
+        "use": wealth_fields,
+        "regulatory_requirement": (
+            "Source of wealth and source of funds must be verified for "
+            "high-net-worth clients"
+        ),
+    }
+
+    # Owning a company and having the money are two separate things to
+    # prove. The registry settles the first. Income evidence settles
+    # the second.
+    if has_business_wealth:
         dispatch_instructions["business"] = {
-            "use": ["source_of_wealth.description", "client.full_name",
-                    "documents.business_documents"]
+            "use": [
+                "client.full_name",
+                "source_of_wealth_business",
+                "source_of_funds_business",
+                "documents.business_documents",
+                "documents.income_evidence",
+            ],
+            "regulatory_requirement": (
+                "Where wealth derives from a business, ownership must be "
+                "confirmed against registry records, along with how the "
+                "client received the money"
+            ),
         }
 
     return {
         "agent": "orchestrator",
-        # Only the fields the orchestrator actually read
+        # Only what the orchestrator itself read to build this plan.
         "input": {
             "case_id": case_id,
-            "source_of_wealth_description": source_of_wealth.get("description"),
+            "business_wealth_declared": has_business_wealth,
+            "crypto_declared": bool(
+                source_of_funds_personal.get("crypto_involved")
+            ),
         },
         "finding": "PLAN_CREATED",
         "reasoning": (
             f"Required checks: {', '.join(required_checks)}. "
             f"Business review "
-            f"{'included' if has_business_sale else 'not required'} "
-            f"based on the declared source of wealth."
+            f"{'included' if has_business_wealth else 'not required'} "
+            f"based on whether the case declares business wealth."
         ),
         "timestamp": _toronto_now_iso(),
         "regulatory_basis": (
-            "OSFI E-23 - agent selection and input scope must be "
-            "documented and independently reviewable"
+            "Agent selection and input scope must be documented and "
+            "independently reviewable"
         ),
-        # The plan itself. Every record carries the six audit fields, and
-        # some carry one more. The summary agent names its model here.
-        # The orchestrator names which agents run and what each may read.
+        # Every record in the trace carries the six audit fields above.
+        # Some carry one more. The summary agent names the model it ran
+        # on. The orchestrator names the plan.
         "plan": {
             "required_checks": required_checks,
             "dispatch_instructions": dispatch_instructions,

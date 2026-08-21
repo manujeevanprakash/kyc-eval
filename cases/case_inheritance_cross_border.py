@@ -1,8 +1,12 @@
-# Tuple: Passive Heir | Inherited wealth + cross-border | Medium risk signal
+# Robert Whitmore — inheritance, cross-border activity
+#
+# The only case where nothing is missing and the client is still not
+# low risk. Every document is on file. Moving money between
+# jurisdictions is a risk factor on its own.
 
 EXPECTED_RISK_SIGNAL = "MEDIUM"
 
-case_medium = {
+case_inheritance_cross_border = {
     "case_id": "KYC-002",
     "client": {
         "full_name": "Robert Whitmore",
@@ -10,26 +14,28 @@ case_medium = {
         "occupation": "Retired",
         "nationality": "American",
         "residency": "Vancouver, Canada",
-        "net_worth_declared": 8_000_000,
         "pep_declared": False,
         "cross_border_transactions": True,
+        "expected_destination_countries": ["United States"],
     },
-    "source_of_wealth": {
+    "planned_funding_total": {"amount": 8_000_000, "currency": "CAD"},
+
+    "source_of_wealth_personal": {
         "description": "Inheritance from deceased parent estate",
-        "amount": 8_000_000,
-        "currency": "CAD",
     },
-    "source_of_funds": {
+    "source_of_funds_personal": {
         "description": "International estate transfer from US estate account",
         "amount": 8_000_000,
         "currency": "CAD",
         "crypto_involved": False,
     },
+
     "documents": {
         "government_id": True,
         "bank_statements": True,
         "wealth_document": True,
         "business_documents": False,
+        "income_evidence": True,
         "crypto_records": False,
     },
 }
